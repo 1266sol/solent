@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1A1310">
+<meta name="description" content="1인 가상 IP 엔터테인먼트 회사 운영 게임">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SOL ENT.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<style>html{background:#1A1310}img{max-width:100%}[hidden]{display:none!important}
+body{margin:0;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}</style>
+<title>SOL ENT. 사무실</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --wall:#3A2C21; --wall-hi:#4A392B; --floor:#2B2019; --floor-hi:#3A2B20;
+  --wood:#6B4A30; --wood-dk:#4A3222;
+  --ivory:#EDE2CD; --ivory-dim:#B9AC96; --ivory-mute:#8B8071;
+  --lamp:#E9B85C; --lamp-soft:#F5D89A;
+  --seal:#C2452D; --seal-dk:#8E2F1D;
+  --crt:#8FC79A;
+  --night:#16202E; --night-lit:#E3AE55;
+  --ground:#1A1310; --panel:#241A14; --panel-hi:#2F231B;
+  --line:#4A392B; --ok:#7FAE7A; --warn:#D08B3A;
+  --r:4px;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ivory);
+  font-family:"IBM Plex Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+  font-size:15px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding-block:14px 40px; padding-left:16px; padding-right:16px;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex; flex-wrap:wrap; align-items:baseline; gap:8px 18px;
+  border-bottom:1px solid var(--line); padding-bottom:10px; margin-bottom:14px;
+}
+.brand{font-family:"Gowun Batang",serif; font-size:26px; font-weight:700; letter-spacing:.04em; color:var(--ivory)}
+.brand .seal{
+  display:inline-block; background:var(--seal); color:#F3E7D6; font-family:"IBM Plex Sans KR",sans-serif;
+  font-size:11px; font-weight:600; letter-spacing:.14em; padding:2px 7px; border-radius:2px;
+  vertical-align:6px; margin-left:8px;
+}
+.topmeta{margin-left:auto; display:flex; gap:16px; align-items:baseline; flex-wrap:wrap}
+.topmeta div{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--ivory-dim)}
+.topmeta b{color:var(--ivory); font-weight:500}
+.status-on{color:var(--lamp)}
+.status-off{color:var(--ivory-mute)}
+
+/* ---------- stage ---------- */
+.stage{position:relative; border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:#0E0B09}
+.stage svg{display:block; width:100%; height:auto}
+.hot{cursor:pointer}
+.hot .hit{fill:transparent}
+.hot .glow{fill:none; stroke:var(--lamp); stroke-width:2; opacity:0; transition:opacity .18s}
+.hot:hover .glow, .hot:focus-visible .glow{opacity:.85}
+.hot:focus{outline:none}
+.hot:focus-visible .glow{opacity:1; stroke-dasharray:5 4}
+.hot .tag{
+  font-family:"IBM Plex Sans KR",sans-serif; font-size:12.5px; font-weight:500;
+  fill:var(--ivory-dim); letter-spacing:.02em;
+}
+.hot:hover .tag{fill:var(--lamp-soft)}
+.hot .tagbg{fill:#0E0B09; opacity:.55}
+#dark{transition:opacity .9s ease}
+#glowlamp{transition:opacity .9s ease}
+.blink{animation:blink 2.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.35}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){ .blink{animation:none;opacity:.8} #dark,#glowlamp{transition:none} }
+
+/* ---------- quick nav (always visible, mobile-critical) ---------- */
+.nav{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-top:12px}
+.nav button{
+  font-family:inherit; font-size:13px; color:var(--ivory-dim); background:var(--panel);
+  border:1px solid var(--line); border-radius:var(--r); padding:9px 4px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:3px; line-height:1.3;
+}
+.nav button:hover{background:var(--panel-hi); color:var(--ivory)}
+.nav button b{font-weight:500; font-size:13.5px; color:var(--ivory)}
+.nav button span{font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--ivory-mute)}
+@media (max-width:560px){ .nav{grid-template-columns:repeat(3,1fr)} }
+
+/* ---------- panel ---------- */
+.scrim{position:fixed; inset:0; background:rgba(8,6,5,.72); display:none; z-index:40}
+.scrim.open{display:block}
+.panel{
+  position:fixed; z-index:50; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(680px, calc(100vw - 32px)); max-height:calc(100vh - 48px); overflow:auto;
+  background:var(--panel); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:0 24px 60px rgba(0,0,0,.6); display:none;
+}
+.panel.open{display:block}
+@media (max-width:560px){
+  .panel{top:auto; bottom:0; transform:translateX(-50%); width:100vw; max-height:88vh; border-radius:var(--r) var(--r) 0 0}
+}
+.phead{
+  display:flex; align-items:center; gap:12px; padding:14px 18px; border-bottom:1px solid var(--line);
+  position:sticky; top:0; background:var(--panel); z-index:2;
+}
+.phead h2{margin:0; font-family:"Gowun Batang",serif; font-size:20px; font-weight:700; letter-spacing:.03em}
+.phead .sub{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ivory-mute)}
+.close{margin-left:auto; background:none; border:1px solid var(--line); color:var(--ivory-dim);
+  border-radius:var(--r); font-size:13px; padding:5px 10px; cursor:pointer; font-family:inherit}
+.close:hover{color:var(--ivory); border-color:var(--ivory-mute)}
+.pbody{padding:16px 18px 22px}
+
+/* ---------- shared bits ---------- */
+h3.sec{
+  font-family:"IBM Plex Sans KR",sans-serif; font-size:11.5px; font-weight:600; letter-spacing:.16em;
+  color:var(--ivory-mute); margin:22px 0 10px; text-transform:none;
+}
+h3.sec:first-child{margin-top:0}
+.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+input[type=text], input[type=date], input[type=number], textarea, select{
+  font-family:inherit; font-size:14px; color:var(--ivory); background:#1B1410;
+  border:1px solid var(--line); border-radius:var(--r); padding:8px 10px; width:100%;
+}
+textarea{resize:vertical; min-height:64px; line-height:1.55}
+input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible{
+  outline:2px solid var(--lamp); outline-offset:1px
+}
+label.fl{display:block; font-size:12px; color:var(--ivory-mute); margin-bottom:4px; letter-spacing:.04em}
+.field{margin-bottom:12px}
+.btn{
+  font-family:inherit; font-size:14px; font-weight:500; cursor:pointer;
+  background:var(--wood); color:#F6EBD9; border:1px solid #7C5838; border-radius:var(--r);
+  padding:9px 16px;
+}
+.btn:hover{background:#7C5838}
+.btn.primary{background:var(--seal); border-color:#D2543A}
+.btn.primary:hover{background:#D2543A}
+.btn.ghost{background:transparent; color:var(--ivory-dim); border-color:var(--line)}
+.btn.ghost:hover{color:var(--ivory); border-color:var(--ivory-mute)}
+.btn.sm{font-size:12.5px; padding:6px 11px}
+.mono{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.dim{color:var(--ivory-dim)}
+.mute{color:var(--ivory-mute)}
+.hr{height:1px; background:var(--line); margin:18px 0}
+.empty{color:var(--ivory-mute); font-size:13.5px; padding:10px 0}
+
+/* stat strip */
+.stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(96px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.stats div{background:var(--panel); padding:10px 12px}
+.stats .k{font-size:11px; color:var(--ivory-mute); letter-spacing:.06em}
+.stats .v{font-family:"IBM Plex Mono",monospace; font-size:19px; color:var(--ivory); font-variant-numeric:tabular-nums; line-height:1.35}
+.stats .v small{font-size:12px; color:var(--ivory-dim); margin-left:2px}
+
+/* mission */
+.mission{border-left:3px solid var(--seal); padding:2px 0 2px 14px}
+.mission .t{font-family:"Gowun Batang",serif; font-size:19px; line-height:1.5}
+.mission.done .t{color:var(--ivory-mute); text-decoration:line-through}
+
+/* stage checklist */
+.stagelist{display:flex; flex-direction:column; gap:0; border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.stagerow{display:flex; align-items:center; gap:11px; padding:10px 13px; border-bottom:1px solid var(--line); background:var(--panel)}
+.stagerow:last-child{border-bottom:none}
+.stagerow.done{background:var(--panel-hi)}
+.stagerow .no{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ivory-mute); width:18px}
+.stagerow .nm{flex:1; font-size:14px}
+.stagerow.done .nm{color:var(--ivory-dim)}
+.tick{width:20px; height:20px; border:1px solid var(--ivory-mute); border-radius:2px; background:transparent; cursor:pointer; display:grid; place-items:center; padding:0}
+.tick[aria-pressed=true]{background:var(--ok); border-color:var(--ok)}
+.tick svg{width:12px; height:12px; opacity:0}
+.tick[aria-pressed=true] svg{opacity:1}
+.bar{height:5px; background:#1B1410; border-radius:3px; overflow:hidden; margin:10px 0 4px}
+.bar i{display:block; height:100%; background:var(--lamp)}
+
+/* artists */
+.artgrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px}
+.artcard{background:var(--panel-hi); border:1px solid var(--line); border-radius:var(--r); padding:10px; text-align:left; cursor:pointer; font-family:inherit; color:inherit}
+.artcard:hover{border-color:var(--ivory-mute)}
+.artcard .face{width:100%; aspect-ratio:3/4; border-radius:2px; overflow:hidden; background:#1B1410; display:grid; place-items:center; margin-bottom:8px}
+.artcard .face img{width:100%; height:100%; object-fit:cover; display:block}
+.artcard .nm{font-family:"Gowun Batang",serif; font-size:16px; font-weight:700}
+.artcard .rl{font-size:11.5px; color:var(--ivory-mute); font-family:"IBM Plex Mono",monospace}
+
+/* ledger */
+.ledger{border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.lrow{display:flex; gap:10px; align-items:baseline; padding:8px 12px; border-bottom:1px solid var(--line); font-size:13.5px}
+.lrow:last-child{border-bottom:none}
+.lrow .d{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ivory-mute); width:52px; flex:none}
+.lrow .m{flex:1}
+.lrow .a{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+.a.plus{color:var(--ok)} .a.minus{color:var(--seal)}
+
+/* log */
+.loglist{display:flex; flex-direction:column; gap:10px}
+.logitem{border-left:2px solid var(--line); padding-left:12px}
+.logitem .d{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--ivory-mute)}
+.logitem .t{font-size:14px; line-height:1.55}
+
+.toast{
+  position:fixed; left:50%; bottom:26px; transform:translateX(-50%); z-index:70;
+  background:#F0E3CC; color:#2B2019; padding:9px 16px; border-radius:var(--r);
+  font-size:13.5px; font-weight:500; box-shadow:0 8px 26px rgba(0,0,0,.5); display:none;
+}
+.toast.show{display:block}
+.savehint{font-family:"IBM Plex Mono",monospace; font-size:11px; color:var(--ivory-mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">SOL ENT.<span class="seal">幻影館</span></div>
+    <div class="topmeta">
+      <div id="mDate">—</div>
+      <div>출근 <b id="mStreak" class="mono">0</b>일 연속</div>
+      <div>제작비 <b id="mBudget" class="mono">0</b>원</div>
+      <div id="mState" class="status-off">● 퇴근</div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <div class="nav">
+    <button data-open="door"><b>출입문</b><span>출퇴근</span></button>
+    <button data-open="desk"><b>대표 책상</b><span>오늘의 업무</span></button>
+    <button data-open="board"><b>화이트보드</b><span>제작실</span></button>
+    <button data-open="wall"><b>배우 프로필</b><span>아티스트실</span></button>
+    <button data-open="safe"><b>금고·장부</b><span>대표실</span></button>
+  </div>
+  <div id="installBar" hidden style="margin-top:12px;display:flex;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:10px 14px">
+    <span style="font-size:13px;color:var(--ivory-dim);flex:1">홈 화면에 설치하면 앱처럼 열립니다.</span>
+    <button class="btn sm">설치</button>
+  </div>
+  <p class="savehint" id="saveHint" style="margin-top:10px">기록은 이 기기에 저장됩니다. 대표실에서 JSON으로 백업해 두세요.</p>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true" aria-labelledby="pTitle">
+  <div class="phead">
+    <h2 id="pTitle">—</h2><span class="sub" id="pSub"></span>
+    <button class="close" id="pClose">닫기</button>
+  </div>
+  <div class="pbody" id="pBody"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============== 기본 데이터 ============== */
+const ACTOR_SEED = [
+  {id:"a1", name:"하윤서", role:"주연", color:"#C2452D", hair:"long"},
+  {id:"a2", name:"김재이", role:"주연", color:"#3F6C8E", hair:"bob"},
+  {id:"a3", name:"황아린", role:"조연", color:"#8A6BA8", hair:"pony"},
+  {id:"a4", name:"강태구", role:"조연", color:"#4E7A5A", hair:"short"},
+  {id:"a5", name:"구민호", role:"조연", color:"#B8862F", hair:"short"}
+];
+const LINES = {
+  a1:["대표님, 프로필 사진 오늘 확정하기로 하셨죠.","저 다음 공개 언제예요?","의상 시안 두 개 중에 골라주세요."],
+  a2:["캠코더 들고 편집실 앞에서 기다리고 있어요.","복도 장면 다시 찍는 거 맞죠?","오늘 촬영분 확인하셨어요?"],
+  a3:["의상 시안 보고 있었어요. 이쪽이 더 2007 같지 않아요?","제 씬 언제 올라가요?","헤어 기준 좀 정해주세요."],
+  a4:["OST 녹음 일정 기다리는 중입니다.","가이드 목소리 후보 골라주세요.","저 이번 달 활동 없어요?"],
+  a5:["소파에서 대본 읽고 있었어요.","제 분량 좀 늘려주시면 안 돼요?","다음 작품 얘기 좀 해요, 대표님."]
+};
+const STAGE_SEED = ["시나리오·글콘티","캐릭터 시트","이미지 생성","영상 생성","편집","음악·OST","공개"];
+
+function todayStr(d){ d=d||new Date(); const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }
+function monthStr(){ return todayStr().slice(0,7); }
+function nowIso(){ return new Date().toISOString(); }
+function won(n){ return (n||0).toLocaleString("ko-KR"); }
+function daysBetween(a,b){ return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000); }
+
+function defaultState(){
+  return {
+    v:1, updatedAt:nowIso(),
+    attend:{ today:null, inAt:null, outAt:null, streak:0, days:0, minutes:0, lastDay:null },
+    mission:{ date:null, text:"", done:false },
+    work:{ title:"학교괴담 2007", type:"본편", release:"",
+      stages:STAGE_SEED.map((n,i)=>({n:n, done:false, note:""})) },
+    upcoming:[],
+    actors:ACTOR_SEED.map(a=>({
+      id:a.id, name:a.name, role:a.role, color:a.color, contract:"자체 전속 가상 아티스트",
+      work:"학교괴담 2007", month:"", nextDate:"", nextTitle:"", faceId:null, todo:"", memo:""
+    })),
+    budget:{ balance:0, month:monthStr(), deliveryLimit:120000, deliveryUsed:0,
+      convert:10000, goalName:"영상 생성 크레딧", goalTarget:30000, savedCount:0, entries:[] },
+    logs:[]
+  };
+}
+
+let S = defaultState();
+let loaded=true, faceUrls={};
+
+/* ============== 저장 ============== */
+const LS="solent.v1";
+function readLocal(){ try{ const r=localStorage.getItem(LS); return r?JSON.parse(r):null; }catch(e){ return null; } }
+function writeLocal(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+let saveTimer=null;
+function save(){ S.updatedAt = nowIso(); writeLocal(); }
+function merge(remote){
+  if(!remote || typeof remote!=="object") return;
+  const d = defaultState(), n = {v:1, updatedAt: remote.updatedAt || nowIso()};
+  n.attend  = Object.assign({}, d.attend,  remote.attend||{});
+  n.mission = Object.assign({}, d.mission, remote.mission||{});
+  n.work    = Object.assign({}, d.work,    remote.work||{});
+  n.budget  = Object.assign({}, d.budget,  remote.budget||{});
+  n.actors  = (Array.isArray(remote.actors) && remote.actors.length)
+    ? d.actors.map((base,i)=>Object.assign({}, base, remote.actors[i]||{}))
+    : d.actors;
+  n.logs     = Array.isArray(remote.logs) ? remote.logs : [];
+  n.upcoming = Array.isArray(remote.upcoming) ? remote.upcoming : [];
+  if(!Array.isArray(n.work.stages) || !n.work.stages.length) n.work.stages = d.work.stages;
+  if(!Array.isArray(n.budget.entries)) n.budget.entries = [];
+  S = n;
+}
+/* ---- IndexedDB: 배우 얼굴 이미지 ---- */
+function idb(){ return new Promise((res,rej)=>{
+  const r=indexedDB.open("solent",1);
+  r.onupgradeneeded=()=>{ if(!r.result.objectStoreNames.contains("faces")) r.result.createObjectStore("faces"); };
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);
+}); }
+function idbPut(k,v){ return idb().then(db=>new Promise((res,rej)=>{
+  const t=db.transaction("faces","readwrite"); t.objectStore("faces").put(v,k);
+  t.oncomplete=()=>res(); t.onerror=()=>rej(t.error);
+})); }
+function idbAll(){ return idb().then(db=>new Promise((res,rej)=>{
+  const t=db.transaction("faces"), out={}, c=t.objectStore("faces").openCursor();
+  c.onsuccess=e=>{ const cur=e.target.result; if(cur){ out[cur.key]=cur.value; cur.continue(); } else res(out); };
+  c.onerror=()=>rej(c.error);
+})); }
+
+function boot(){
+  const local = readLocal();
+  if(local) merge(local);
+  rollMonth(); render();
+  loadFaces();
+}
+function loadFaces(){
+  if(!("indexedDB" in window)) return;
+  idbAll().then(map=>{
+    Object.keys(map).forEach(k=>{ try{ faceUrls[k]=URL.createObjectURL(map[k]); }catch(e){} });
+    if(Object.keys(map).length) render();
+  }).catch(()=>{});
+}
+function rollMonth(){
+  const m=monthStr();
+  if(S.budget.month!==m){ S.budget.month=m; S.budget.deliveryUsed=0; }
+}
+
+/* ============== 사무실 그리기 ============== */
+function hillWindows(){
+  let s="", seed=7;
+  const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  for(let i=0;i<74;i++){
+    const x=358+rnd()*158, y=240+rnd()*56, w=3+rnd()*2.5, h=2.5+rnd()*2;
+    const on=rnd()>.42;
+    s+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="${on?'#E3AE55':'#26313F'}" opacity="${on?(.55+rnd()*.45).toFixed(2):'.8'}"/>`;
+  }
+  return s;
+}
+function frame(x,y,w,h,a,idx){
+  const url=faceUrls[a.id];
+  const inner = url
+    ? `<image href="${url}" x="${x+4}" y="${y+4}" width="${w-8}" height="${h-8}" preserveAspectRatio="xMidYMid slice"/>`
+    : `<rect x="${x+4}" y="${y+4}" width="${w-8}" height="${h-8}" fill="#1E1713"/>
+       <circle cx="${x+w/2}" cy="${y+h*0.4}" r="${w*0.19}" fill="${a.color}" opacity=".85"/>
+       <path d="M${x+w*0.22} ${y+h-8} q${w*0.28} -${h*0.34} ${w*0.56} 0 z" fill="${a.color}" opacity=".6"/>`;
+  return `<g><rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#7C5838" stroke="#3A2820"/>${inner}
+    <text x="${x+w/2}" y="${y+h+13}" text-anchor="middle" font-size="11" fill="#B9AC96" font-family="IBM Plex Sans KR, sans-serif">${a.name}</text></g>`;
+}
+function standee(x, a, line){
+  const c=a.color, HD="#2A1D16";
+  const cap=`<path d="M${x-16} 403 a16 16 0 0 1 32 0 z" fill="${HD}"/>`;
+  const lock=(dx,h)=>`<rect x="${x+dx}" y="398" width="6" height="${h}" rx="3" fill="${HD}"/>`;
+  const hair = a.hair==="long" ? cap+lock(-17,34)+lock(11,34)
+    : a.hair==="bob" ? cap+lock(-17,18)+lock(11,18)
+    : a.hair==="pony" ? cap+`<path d="M${x+14} 400 q13 12 6 30" stroke="${HD}" stroke-width="7" fill="none" stroke-linecap="round"/>`
+    : cap;
+  const bx = x<760 ? x-6 : x-176;
+  return `<g>
+    <ellipse cx="${x}" cy="519" rx="30" ry="7" fill="#140F0C" opacity=".55"/>
+    <path d="M${x-22} 519 l6 -78 q16 -10 32 0 l6 78 z" fill="${c}" opacity=".9"/>
+    <path d="M${x-22} 519 l3 -40 h38 l3 40 z" fill="#241A14" opacity=".35"/>
+    <circle cx="${x}" cy="404" r="15" fill="#E4C4A4"/>
+    ${hair}
+    <g opacity=".97">
+      <rect x="${bx}" y="322" width="182" height="46" rx="3" fill="#F0E3CC"/>
+      <path d="M${x-5} 368 l10 0 l-6 11 z" fill="#F0E3CC"/>
+      <foreignObject x="${bx+10}" y="${328}" width="162" height="36">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'IBM Plex Sans KR',sans-serif;font-size:11.5px;line-height:1.35;color:#2B2019">${line}</div>
+      </foreignObject>
+    </g>
+  </g>`;
+}
+function hotspot(id,x,y,w,h,label,lx,ly){
+  return `<g class="hot" data-open="${id}" tabindex="0" role="button" aria-label="${label}">
+    <rect class="hit" x="${x}" y="${y}" width="${w}" height="${h}"/>
+    <rect class="glow" x="${x}" y="${y}" width="${w}" height="${h}" rx="3"/>
+    <rect class="tagbg" x="${lx-4}" y="${ly-12}" width="${label.length*13+8}" height="17" rx="2"/>
+    <text class="tag" x="${lx}" y="${ly}">${label}</text>
+  </g>`;
+}
+function drawOffice(){
+  const on = !!S.attend.inAt && !S.attend.outAt;
+  const doy = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0))/86400000);
+  const A = S.actors, i1 = doy % A.length, i2 = (doy+2) % A.length;
+  const a1=A[i1], a2=A[i2===i1?(i1+1)%A.length:i2];
+  const seed1=ACTOR_SEED.find(x=>x.id===a1.id)||ACTOR_SEED[0];
+  const seed2=ACTOR_SEED.find(x=>x.id===a2.id)||ACTOR_SEED[1];
+  const l1=(LINES[a1.id]||["..."])[doy%3], l2=(LINES[a2.id]||["..."])[(doy+1)%3];
+  const done = S.work.stages.filter(s=>s.done).length;
+
+  return `<svg viewBox="0 0 1200 600" role="img" aria-label="야간의 소형 기획사 사무실">
+  <defs>
+    <linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4A392B"/><stop offset="1" stop-color="#332619"/></linearGradient>
+    <linearGradient id="floorg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3A2B20"/><stop offset="1" stop-color="#241A13"/></linearGradient>
+    <radialGradient id="lampg" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#F5D89A" stop-opacity=".26"/>
+      <stop offset=".55" stop-color="#F5D89A" stop-opacity=".10"/>
+      <stop offset="1" stop-color="#F5D89A" stop-opacity="0"/></radialGradient>
+    <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#101A26"/><stop offset="1" stop-color="#22303F"/></linearGradient>
+  </defs>
+
+  <rect x="0" y="0" width="1200" height="600" fill="#241A13"/>
+  <rect x="0" y="36" width="1200" height="484" fill="url(#wallg)"/>
+  <rect x="0" y="0" width="1200" height="36" fill="#1E1610"/>
+  <rect x="0" y="520" width="1200" height="80" fill="url(#floorg)"/>
+  <rect x="0" y="516" width="1200" height="6" fill="#57412F"/>
+  ${[0,1,2,3,4,5,6,7].map(i=>`<line x1="${i*190-60}" y1="600" x2="${i*170+40}" y2="522" stroke="#1C140F" stroke-width="1.5" opacity=".5"/>`).join("")}
+
+  <!-- 천장 형광등 -->
+  <rect x="505" y="24" width="200" height="12" rx="2" fill="#5A4634"/>
+  <rect x="515" y="30" width="180" height="7" rx="3" fill="${on?'#F7ECCF':'#3A2E22'}"/>
+  <ellipse id="glowlamp" cx="605" cy="300" rx="560" ry="300" fill="url(#lampg)" opacity="${on?1:0}"/>
+
+  <!-- 출입문 -->
+  <g>
+    <rect x="26" y="150" width="112" height="370" fill="#4A3222" stroke="#2E2016" stroke-width="2"/>
+    <rect x="38" y="164" width="88" height="150" fill="#5A3D29"/>
+    <rect x="38" y="330" width="88" height="176" fill="#5A3D29"/>
+    <circle cx="118" cy="352" r="6" fill="#C9A86A"/>
+    <rect x="72" y="112" width="66" height="30" rx="2" fill="#1E1610" stroke="#5A4634"/>
+    <circle cx="105" cy="127" r="5" fill="${on?'#7FAE7A':'#C2452D'}" class="${on?'':'blink'}"/>
+    <text x="72" y="104" font-size="10.5" fill="#8B8071" font-family="IBM Plex Mono, monospace">${on?"IN":"OFF"}</text>
+  </g>
+
+  <!-- TV -->
+  <g>
+    <rect x="190" y="150" width="146" height="104" rx="3" fill="#2A2018" stroke="#5A4634" stroke-width="2"/>
+    <rect x="200" y="160" width="126" height="76" fill="${on?'#1B2A22':'#141110'}"/>
+    ${on?`<text x="263" y="196" text-anchor="middle" font-size="13" fill="#8FC79A" font-family="IBM Plex Mono, monospace">幻影館</text>
+         <text x="263" y="214" text-anchor="middle" font-size="10" fill="#5E8C69" font-family="IBM Plex Mono, monospace">ON AIR</text>`:``}
+    <rect x="246" y="254" width="34" height="10" fill="#3A2B20"/>
+  </g>
+
+  <!-- 창문: 부산 감천 언덕 야경 -->
+  <g>
+    <rect x="352" y="106" width="172" height="196" fill="url(#skyg)" stroke="#5A4634" stroke-width="4"/>
+    <circle cx="497" cy="134" r="11" fill="#E8DCBE" opacity=".85"/>
+    <path d="M352 232 q40 -34 86 -20 q46 14 86 -8 v98 H352 Z" fill="#1B2632"/>
+    <path d="M352 262 q52 -26 100 -8 q40 16 72 2 v46 H352 Z" fill="#151E28"/>
+    ${hillWindows()}
+    <line x1="438" y1="106" x2="438" y2="302" stroke="#5A4634" stroke-width="4"/>
+    <line x1="352" y1="204" x2="524" y2="204" stroke="#5A4634" stroke-width="4"/>
+  </g>
+
+  <!-- 포스터 -->
+  <g>
+    <rect x="548" y="98" width="118" height="166" fill="#1B1411" stroke="#6B4A30" stroke-width="3"/>
+    <rect x="556" y="106" width="102" height="96" fill="#0F1518"/>
+    <path d="M566 202 q22 -58 46 -30 q22 26 40 30 z" fill="#26343A"/>
+    <circle cx="596" cy="146" r="15" fill="#2E4148"/>
+    <text x="607" y="226" text-anchor="middle" font-size="14" fill="#EDE2CD" font-family="Gowun Batang, serif">학교괴담</text>
+    <text x="607" y="246" text-anchor="middle" font-size="15" fill="#C2452D" font-family="IBM Plex Mono, monospace">2007</text>
+  </g>
+
+  <!-- 화이트보드 -->
+  <g>
+    <rect x="692" y="100" width="212" height="152" rx="2" fill="#E8E2D4" stroke="#8C7A5F" stroke-width="4"/>
+    <text x="706" y="126" font-size="13" fill="#2B2019" font-family="Gowun Batang, serif">제작 일정</text>
+    <line x1="706" y1="134" x2="886" y2="134" stroke="#B33A2B" stroke-width="1.5"/>
+    <text x="706" y="156" font-size="11.5" fill="#3A3228" font-family="IBM Plex Sans KR, sans-serif">${S.work.title}</text>
+    <text x="706" y="176" font-size="11" fill="#6B6152" font-family="IBM Plex Mono, monospace">진행 ${done}/${S.work.stages.length}</text>
+    <rect x="706" y="184" width="180" height="7" fill="#CFC6B4"/>
+    <rect x="706" y="184" width="${Math.round(180*done/S.work.stages.length)}" height="7" fill="#B33A2B"/>
+    <text x="706" y="214" font-size="11" fill="#6B6152" font-family="IBM Plex Sans KR, sans-serif">다음 공개 ${S.work.release||"미정"}</text>
+    <rect x="856" y="230" width="34" height="6" rx="3" fill="#B33A2B"/>
+    <rect x="812" y="230" width="34" height="6" rx="3" fill="#3F6C8E"/>
+  </g>
+
+  <!-- 배우 프로필 벽 -->
+  <g>
+    <text x="936" y="92" font-size="11" fill="#8B8071" font-family="IBM Plex Mono, monospace">SOL ENT. ARTISTS</text>
+    ${frame(936,100,64,84,S.actors[0]||ACTOR_SEED[0])}
+    ${frame(1012,100,64,84,S.actors[1]||ACTOR_SEED[1])}
+    ${frame(1088,100,64,84,S.actors[2]||ACTOR_SEED[2])}
+    ${frame(974,206,64,84,S.actors[3]||ACTOR_SEED[3])}
+    ${frame(1050,206,64,84,S.actors[4]||ACTOR_SEED[4])}
+  </g>
+
+  <!-- 소파 -->
+  <g>
+    <rect x="152" y="420" width="170" height="38" rx="8" fill="#5C4030"/>
+    <rect x="152" y="452" width="170" height="62" rx="6" fill="#6B4A30"/>
+    <rect x="152" y="452" width="24" height="62" rx="6" fill="#553A2A"/>
+    <rect x="298" y="452" width="24" height="62" rx="6" fill="#553A2A"/>
+    <rect x="200" y="502" width="74" height="13" fill="#3A2820"/>
+  </g>
+
+  <!-- 대표 책상 -->
+  <g>
+    <rect x="330" y="398" width="292" height="14" rx="2" fill="#7C5838"/>
+    <rect x="344" y="412" width="14" height="104" fill="#4A3222"/>
+    <rect x="594" y="412" width="14" height="104" fill="#4A3222"/>
+    <!-- CRT -->
+    <rect x="382" y="306" width="110" height="92" rx="5" fill="#D6C7A8"/>
+    <rect x="392" y="316" width="90" height="66" rx="3" fill="${on?'#12241A':'#1A1614'}"/>
+    ${on?`<text x="400" y="338" font-size="10.5" fill="#8FC79A" font-family="IBM Plex Mono, monospace">&gt; RENDER</text>
+         <text x="400" y="354" font-size="10.5" fill="#8FC79A" font-family="IBM Plex Mono, monospace">&gt; ${done}/${S.work.stages.length} STAGE</text>
+         <rect x="400" y="362" width="8" height="11" fill="#8FC79A" class="blink"/>`:``}
+    <!-- 캠코더 -->
+    <g><rect x="516" y="368" width="42" height="26" rx="4" fill="#2E2620"/>
+       <circle cx="556" cy="381" r="9" fill="#4A4038"/><circle cx="556" cy="381" r="4" fill="#8FC79A" opacity="${on?.9:.25}"/>
+       <rect x="522" y="360" width="16" height="9" rx="2" fill="#3A322A"/></g>
+    <!-- CD 더미 -->
+    <g><ellipse cx="352" cy="392" rx="18" ry="5" fill="#B9AC96"/><ellipse cx="352" cy="387" rx="18" ry="5" fill="#CFC2A8"/>
+       <ellipse cx="352" cy="382" rx="18" ry="5" fill="#B9AC96"/><circle cx="352" cy="382" r="4" fill="#2B2019"/></g>
+    <!-- 서류 -->
+    <rect x="566" y="386" width="44" height="12" fill="#E8E2D4" transform="rotate(-4 588 392)"/>
+  </g>
+
+  <!-- 배우 등장 -->
+  ${on?standee(690, seed1, l1):""}
+  ${on?standee(870, seed2, l2):""}
+
+  <!-- 금고 · 장부 -->
+  <g>
+    <rect x="948" y="372" width="176" height="144" rx="3" fill="#3F3128" stroke="#5A4634" stroke-width="2"/>
+    <rect x="964" y="388" width="144" height="112" rx="2" fill="#2E241C"/>
+    <circle cx="1036" cy="444" r="22" fill="#5A4634"/><circle cx="1036" cy="444" r="14" fill="#3F3128"/>
+    <line x1="1036" y1="426" x2="1036" y2="462" stroke="#C9A86A" stroke-width="2.5"/>
+    <line x1="1018" y1="444" x2="1054" y2="444" stroke="#C9A86A" stroke-width="2.5"/>
+    <rect x="956" y="352" width="66" height="18" rx="2" fill="#E8E2D4" transform="rotate(-3 989 361)"/>
+    <text x="962" y="365" font-size="10" fill="#2B2019" font-family="IBM Plex Mono, monospace" transform="rotate(-3 989 361)">帳簿</text>
+  </g>
+
+  <!-- 어둠 -->
+  <rect id="dark" x="0" y="0" width="1200" height="600" fill="#0A1018" opacity="${on?0:.74}" pointer-events="none"/>
+
+  <!-- 핫스팟 -->
+  ${hotspot("door",24,110,118,412,"출입문",28,548)}
+  ${hotspot("board",688,96,220,160,"화이트보드",694,278)}
+  ${hotspot("wall",930,86,228,212,"배우 프로필",936,332)}
+  ${hotspot("desk",330,300,292,120,"대표 책상",336,548)}
+  ${hotspot("safe",946,368,180,150,"금고·장부",952,548)}
+  ${hotspot("board",188,146,150,122,"TV",194,290)}
+</svg>`;
+}
+
+/* ============== 렌더 ============== */
+function render(){
+  document.getElementById("stage").innerHTML = drawOffice();
+  const on = !!S.attend.inAt && !S.attend.outAt;
+  const st=document.getElementById("mState");
+  st.textContent = on ? "● 출근 중" : "● 퇴근";
+  st.className = on ? "status-on" : "status-off";
+  document.getElementById("mDate").textContent = todayStr()+" "+["일","월","화","수","목","금","토"][new Date().getDay()]+"요일";
+  document.getElementById("mStreak").textContent = S.attend.streak;
+  document.getElementById("mBudget").textContent = won(S.budget.balance);
+  if(open_id) openPanel(open_id, true);
+}
+
+/* ============== 패널 ============== */
+let open_id=null;
+const P=document.getElementById("panel"), SC=document.getElementById("scrim");
+function closePanel(){ open_id=null; P.classList.remove("open"); SC.classList.remove("open"); }
+document.getElementById("pClose").onclick=closePanel;
+SC.onclick=closePanel;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closePanel(); });
+
+function openPanel(id, keep){
+  open_id=id;
+  const v=VIEWS[id]; if(!v) return;
+  document.getElementById("pTitle").textContent=v.title;
+  document.getElementById("pSub").textContent=v.sub||"";
+  document.getElementById("pBody").innerHTML=v.body();
+  P.classList.add("open"); SC.classList.add("open");
+  if(v.after) v.after();
+  if(!keep) P.scrollTop=0;
+}
+document.addEventListener("click",e=>{
+  const t=e.target.closest("[data-open]");
+  if(t){ openPanel(t.getAttribute("data-open")); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter"&&e.key!==" ") return;
+  const t=e.target.closest && e.target.closest("g.hot[data-open]");
+  if(t){ e.preventDefault(); openPanel(t.getAttribute("data-open")); }
+});
+function toast(msg){
+  const el=document.getElementById("toast"); el.textContent=msg; el.classList.add("show");
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove("show"),2200);
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+/* ---------- 출입문 ---------- */
+function clockIn(){
+  const t=todayStr();
+  if(S.attend.today!==t){
+    if(S.attend.lastDay && daysBetween(S.attend.lastDay,t)===1) S.attend.streak++;
+    else S.attend.streak=1;
+    S.attend.days++; S.attend.today=t; S.attend.lastDay=t;
+  }
+  S.attend.inAt=nowIso(); S.attend.outAt=null;
+  if(S.mission.date!==t){ S.mission={date:t, text:"", done:false}; }
+  save(); render(); openPanel("desk");
+  toast("사무실 불을 켰습니다. 오늘의 업무를 정하세요.");
+}
+function clockOut(){
+  const box=document.getElementById("logText");
+  const text=(box&&box.value||"").trim();
+  if(!text){ toast("업무일지 한 줄을 남기고 퇴근합니다."); box&&box.focus(); return; }
+  const mins=S.attend.inAt?Math.max(1,Math.round((Date.now()-new Date(S.attend.inAt))/60000)):0;
+  S.attend.minutes+=mins; S.attend.outAt=nowIso();
+  S.logs.unshift({date:todayStr(), text:text, min:mins, mission:S.mission.text||""});
+  S.logs=S.logs.slice(0,300);
+  save(); render(); openPanel("door");
+  toast("퇴근 기록 완료. "+mins+"분 근무.");
+}
+VIEWS_INIT();
+function VIEWS_INIT(){ window.VIEWS = {
+
+/* ===== 출입문 ===== */
+door:{ title:"출입문", sub:"ATTENDANCE", body(){
+  const on=!!S.attend.inAt&&!S.attend.outAt;
+  const inT=S.attend.inAt?new Date(S.attend.inAt).toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}):"—";
+  const h=Math.floor(S.attend.minutes/60), m=S.attend.minutes%60;
+  let html=`<div class="stats">
+    <div><div class="k">연속 출근</div><div class="v">${S.attend.streak}<small>일</small></div></div>
+    <div><div class="k">누적 출근</div><div class="v">${S.attend.days}<small>일</small></div></div>
+    <div><div class="k">누적 근무</div><div class="v">${h}<small>시간</small> ${m}<small>분</small></div></div>
+    <div><div class="k">업무일지</div><div class="v">${S.logs.length}<small>건</small></div></div>
+  </div>`;
+  if(on){
+    html+=`<h3 class="sec">퇴근 기록</h3>
+    <p class="dim" style="margin:0 0 10px">${inT} 출근. 오늘 한 일을 한 줄로 남기면 회사의 제작 기록이 됩니다.</p>
+    <div class="field"><label class="fl" for="logText">오늘의 업무일지</label>
+      <textarea id="logText" placeholder="예) 김재이 캠코더 장면 4개 생성. 얼굴 일관성 부족으로 2개 폐기. 다음은 복도 클로즈업 재생성."></textarea></div>
+    <button class="btn primary" data-act="out">퇴근하기</button>`;
+  }else{
+    html+=`<h3 class="sec">출근</h3>
+    <p class="dim" style="margin:0 0 12px">불이 꺼진 사무실입니다. 출근하면 오늘의 핵심 업무를 하나 정하고, 소속 배우가 출근합니다.</p>
+    <button class="btn primary" data-act="in">출근하기</button>`;
+  }
+  if(S.logs.length){
+    html+=`<h3 class="sec">최근 업무일지</h3><div class="loglist">`+
+      S.logs.slice(0,8).map(l=>`<div class="logitem"><div class="d">${l.date} · ${l.min}분${l.mission?" · "+esc(l.mission):""}</div><div class="t">${esc(l.text)}</div></div>`).join("")+
+      `</div>`;
+  }
+  return html;
+}, after(){
+  const b=P.querySelector('[data-act="in"]'); if(b) b.onclick=clockIn;
+  const o=P.querySelector('[data-act="out"]'); if(o) o.onclick=clockOut;
+}},
+
+/* ===== 대표 책상 ===== */
+desk:{ title:"대표 책상", sub:"TODAY", body(){
+  const t=todayStr();
+  if(S.mission.date!==t) S.mission={date:t, text:S.mission.date?"":S.mission.text, done:false};
+  const has=!!S.mission.text;
+  let html=`<h3 class="sec">오늘 회사의 가장 중요한 일 — 하나만</h3>`;
+  if(has){
+    html+=`<div class="mission ${S.mission.done?"done":""}"><div class="t">${esc(S.mission.text)}</div></div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn ${S.mission.done?"ghost":"primary"}" data-act="toggle">${S.mission.done?"다시 진행 중으로":"완료로 표시"}</button>
+      <button class="btn ghost sm" data-act="edit">바꾸기</button>
+    </div>`;
+  }else{
+    html+=`<div class="field"><label class="fl" for="mText">해야 할 일이 많아도 오늘의 최우선은 하나입니다</label>
+      <input type="text" id="mText" placeholder="예) 황아린 20초 배우 프로필 영상 완성"></div>
+      <button class="btn primary" data-act="set">오늘의 업무로 정하기</button>`;
+  }
+  html+=`<h3 class="sec">진행 중인 작품</h3>
+    <div class="dim" style="font-family:'Gowun Batang',serif;font-size:18px">${esc(S.work.title)}</div>
+    <div class="bar"><i style="width:${Math.round(100*S.work.stages.filter(s=>s.done).length/S.work.stages.length)}%"></i></div>
+    <div class="mute mono" style="font-size:12px">${S.work.stages.filter(s=>s.done).length} / ${S.work.stages.length} 단계 · 다음 공개 ${S.work.release||"미정"}</div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost sm" data-open="board">제작실 열기</button>
+    <button class="btn ghost sm" data-open="wall">아티스트실 열기</button></div>`;
+  return html;
+}, after(){
+  const set=P.querySelector('[data-act="set"]');
+  if(set) set.onclick=()=>{ const v=document.getElementById("mText").value.trim();
+    if(!v){ toast("오늘의 업무를 한 줄 적어주세요."); return; }
+    S.mission={date:todayStr(), text:v, done:false}; save(); openPanel("desk"); };
+  const tg=P.querySelector('[data-act="toggle"]');
+  if(tg) tg.onclick=()=>{ S.mission.done=!S.mission.done; save(); openPanel("desk");
+    if(S.mission.done) toast("오늘의 업무 완료."); };
+  const ed=P.querySelector('[data-act="edit"]');
+  if(ed) ed.onclick=()=>{ S.mission.text=""; save(); openPanel("desk"); };
+}},
+
+/* ===== 제작실 ===== */
+board:{ title:"제작실", sub:"PRODUCTION", body(){
+  const done=S.work.stages.filter(s=>s.done).length;
+  let html=`<div class="field"><label class="fl" for="wTitle">작품</label>
+    <input type="text" id="wTitle" value="${esc(S.work.title)}"></div>
+  <div class="field"><label class="fl" for="wRel">공개 예정일</label>
+    <input type="date" id="wRel" value="${esc(S.work.release)}"></div>
+  <div class="bar"><i style="width:${Math.round(100*done/S.work.stages.length)}%"></i></div>
+  <div class="mute mono" style="font-size:12px;margin-bottom:14px">${done} / ${S.work.stages.length} 단계</div>
+  <h3 class="sec">제작 단계</h3><div class="stagelist">`;
+  S.work.stages.forEach((s,i)=>{
+    html+=`<div class="stagerow ${s.done?"done":""}">
+      <span class="no">${String(i+1).padStart(2,"0")}</span>
+      <span class="nm">${esc(s.n)}</span>
+      <button class="tick" aria-pressed="${s.done}" data-stage="${i}" aria-label="${esc(s.n)} 완료">
+        <svg viewBox="0 0 12 12"><path d="M2 6.5 L5 9.5 L10 3" stroke="#1A1310" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+      </button></div>`;
+  });
+  html+=`</div>
+  <h3 class="sec">공개 편성</h3>
+  <p class="mute" style="font-size:13px;margin:0 0 10px">이 채널은 오리지널 가상 배우들이 출연하는 드라마와 음악을 공개합니다. 월 2회 정기 편성이 기준입니다.</p>`;
+  if(S.upcoming.length){
+    html+=`<div class="ledger">`+S.upcoming.map((u,i)=>
+      `<div class="lrow"><span class="d">${esc(u.date)}</span><span class="m">${esc(u.title)}</span>
+       <button class="btn ghost sm" data-del-up="${i}">삭제</button></div>`).join("")+`</div>`;
+  }else{ html+=`<div class="empty">편성된 공개 일정이 없습니다.</div>`; }
+  html+=`<div class="row" style="margin-top:10px">
+    <input type="date" id="upDate" style="width:auto;flex:0 0 160px">
+    <input type="text" id="upTitle" placeholder="예) 하윤서 캐릭터 인터뷰" style="flex:1;min-width:160px">
+    <button class="btn sm" data-act="addup">편성</button></div>`;
+  return html;
+}, after(){
+  const tt=document.getElementById("wTitle"), rr=document.getElementById("wRel");
+  tt.onchange=()=>{ S.work.title=tt.value.trim()||"무제"; save(); render(); };
+  rr.onchange=()=>{ S.work.release=rr.value; save(); render(); };
+  P.querySelectorAll("[data-stage]").forEach(b=>b.onclick=()=>{
+    const i=+b.getAttribute("data-stage"); S.work.stages[i].done=!S.work.stages[i].done;
+    save(); render(); openPanel("board");
+  });
+  const add=P.querySelector('[data-act="addup"]');
+  if(add) add.onclick=()=>{
+    const d=document.getElementById("upDate").value, t=document.getElementById("upTitle").value.trim();
+    if(!d||!t){ toast("날짜와 제목을 모두 적어주세요."); return; }
+    S.upcoming.push({date:d,title:t}); S.upcoming.sort((a,b)=>a.date<b.date?-1:1);
+    save(); openPanel("board");
+  };
+  P.querySelectorAll("[data-del-up]").forEach(b=>b.onclick=()=>{
+    S.upcoming.splice(+b.getAttribute("data-del-up"),1); save(); openPanel("board");
+  });
+}},
+
+/* ===== 아티스트실 ===== */
+wall:{ title:"아티스트실", sub:"ARTISTS", body(){
+  if(sel_actor){
+    const a=S.actors.find(x=>x.id===sel_actor);
+    if(a){
+      const url=faceUrls[a.id];
+      return `<button class="btn ghost sm" data-act="back">← 전체 명단</button>
+      <div style="display:flex;gap:16px;margin-top:14px;flex-wrap:wrap">
+        <div style="flex:0 0 132px">
+          <div class="artcard" style="cursor:default;border:none;background:transparent;padding:0">
+            <div class="face">${url?`<img src="${url}" alt="${esc(a.name)} 기준 얼굴">`:`<span class="mute" style="font-size:12px">얼굴 미등록</span>`}</div>
+          </div>
+          ${true?`<label class="btn ghost sm" style="display:block;text-align:center;cursor:pointer">얼굴 올리기
+            <input type="file" id="faceIn" accept="image/*" style="display:none"></label>`:
+            `<p class="mute" style="font-size:11.5px">이 화면에서는 이미지 업로드를 쓸 수 없습니다.</p>`}
+        </div>
+        <div style="flex:1;min-width:220px">
+          <div style="font-family:'Gowun Batang',serif;font-size:26px;font-weight:700">${esc(a.name)}</div>
+          <div class="mute mono" style="font-size:12px;margin-bottom:14px">${esc(a.role)} · ${esc(a.contract)}</div>
+          <div class="field"><label class="fl" for="f_work">출연작</label><input type="text" id="f_work" value="${esc(a.work)}"></div>
+          <div class="field"><label class="fl" for="f_month">이번 달 활동</label><input type="text" id="f_month" value="${esc(a.month)}" placeholder="예) 첫 OST 준비"></div>
+          <div class="field"><label class="fl" for="f_todo">대표 확인 사항</label><input type="text" id="f_todo" value="${esc(a.todo)}" placeholder="예) 목소리 후보 3개 비교"></div>
+          <div class="row">
+            <div style="flex:0 0 160px"><label class="fl" for="f_date">다음 공개</label><input type="date" id="f_date" value="${esc(a.nextDate)}"></div>
+            <div style="flex:1;min-width:150px"><label class="fl" for="f_nt">공개 내용</label><input type="text" id="f_nt" value="${esc(a.nextTitle)}"></div>
+          </div>
+          <div class="field" style="margin-top:12px"><label class="fl" for="f_memo">의상·헤어 기준, 팬 반응, 미해결 사항</label>
+            <textarea id="f_memo">${esc(a.memo)}</textarea></div>
+          <button class="btn primary" data-act="saveactor">저장</button>
+        </div>
+      </div>`;
+    }
+  }
+  let html=`<p class="mute" style="font-size:13px;margin:0 0 14px">소속 아티스트 5명. 설정이 아니라 일정이 잡혀 있는 배우로 관리합니다.</p><div class="artgrid">`;
+  S.actors.forEach(a=>{
+    const url=faceUrls[a.id];
+    const next=a.nextDate?`${a.nextDate} ${esc(a.nextTitle||"")}`:"일정 없음";
+    html+=`<button class="artcard" data-actor="${a.id}">
+      <div class="face">${url?`<img src="${url}" alt="">`:`<span class="mute" style="font-size:11px">얼굴 미등록</span>`}</div>
+      <div class="nm">${esc(a.name)}</div>
+      <div class="rl">${esc(a.role)}</div>
+      <div class="mute" style="font-size:11.5px;margin-top:6px;line-height:1.4">${esc(a.month||"이번 달 활동 미정")}</div>
+      <div class="mono" style="font-size:11px;color:var(--lamp);margin-top:4px">${next}</div>
+    </button>`;
+  });
+  return html+`</div>`;
+}, after(){
+  P.querySelectorAll("[data-actor]").forEach(b=>b.onclick=()=>{ sel_actor=b.getAttribute("data-actor"); openPanel("wall"); });
+  const bk=P.querySelector('[data-act="back"]'); if(bk) bk.onclick=()=>{ sel_actor=null; openPanel("wall"); };
+  const sv=P.querySelector('[data-act="saveactor"]');
+  if(sv) sv.onclick=()=>{
+    const a=S.actors.find(x=>x.id===sel_actor); if(!a) return;
+    a.work=document.getElementById("f_work").value;
+    a.month=document.getElementById("f_month").value;
+    a.todo=document.getElementById("f_todo").value;
+    a.nextDate=document.getElementById("f_date").value;
+    a.nextTitle=document.getElementById("f_nt").value;
+    a.memo=document.getElementById("f_memo").value;
+    save(); render(); toast(a.name+" 정보를 저장했습니다.");
+  };
+  const fi=document.getElementById("faceIn");
+  if(fi) fi.onchange=async()=>{
+    const f=fi.files&&fi.files[0]; if(!f) return;
+    if(f.size>6*1024*1024){ toast("6MB 이하 이미지로 줄여서 올려주세요."); return; }
+    try{
+      await idbPut(sel_actor, f);
+      const a=S.actors.find(x=>x.id===sel_actor);
+      if(faceUrls[a.id]) { try{ URL.revokeObjectURL(faceUrls[a.id]); }catch(e){} }
+      faceUrls[a.id]=URL.createObjectURL(f); a.faceId=a.id;
+      save(); render(); openPanel("wall");
+      toast(a.name+" 기준 얼굴 등록 완료.");
+    }catch(e){ toast("저장하지 못했습니다. 브라우저 저장 공간을 확인해 주세요."); }
+  };
+}},
+
+/* ===== 대표실 ===== */
+safe:{ title:"대표실", sub:"LEDGER", body(){
+  const b=S.budget;
+  const pct=b.goalTarget>0?Math.min(100,Math.round(100*b.balance/b.goalTarget)):0;
+  const left=Math.max(0,b.goalTarget-b.balance);
+  let html=`<div class="stats">
+    <div><div class="k">제작비 잔액</div><div class="v">${won(b.balance)}<small>원</small></div></div>
+    <div><div class="k">이번 달 배달 사용</div><div class="v">${won(b.deliveryUsed)}<small>원</small></div></div>
+    <div><div class="k">배달 참기</div><div class="v">${b.savedCount}<small>회</small></div></div>
+  </div>
+
+  <h3 class="sec">이번 목표</h3>
+  <div style="font-family:'Gowun Batang',serif;font-size:18px">${esc(b.goalName)}</div>
+  <div class="bar"><i style="width:${pct}%"></i></div>
+  <div class="mute mono" style="font-size:12px">${won(b.balance)} / ${won(b.goalTarget)}원 · ${left>0?won(left)+"원 남았습니다":"목표 달성"}</div>
+
+  <h3 class="sec">대표 결재</h3>
+  <p class="mute" style="font-size:13px;margin:0 0 10px">배달을 금지하는 장치가 아닙니다. 월 한도 ${won(b.deliveryLimit)}원 안에서는 죄책감 없이 승인하세요. 남은 한도 <b class="mono" style="color:var(--ivory)">${won(Math.max(0,b.deliveryLimit-b.deliveryUsed))}원</b>.</p>
+  <div class="row">
+    <input type="number" id="dAmt" value="25000" step="1000" min="0" style="flex:0 0 130px" aria-label="예상 배달비">
+    <button class="btn ghost sm" data-act="approve">배달 승인</button>
+    <button class="btn primary sm" data-act="convert">집밥 먹고 ${won(b.convert)}원 적립</button>
+  </div>
+
+  <h3 class="sec">지출·적립</h3>
+  <div class="row" style="margin-bottom:10px">
+    <input type="number" id="eAmt" placeholder="금액" step="1000" style="flex:0 0 120px" aria-label="금액">
+    <input type="text" id="eMemo" placeholder="예) 영상 생성 크레딧 구매" style="flex:1;min-width:150px">
+    <button class="btn sm" data-act="spend">지출</button>
+    <button class="btn ghost sm" data-act="deposit">입금</button>
+  </div>`;
+  if(b.entries.length){
+    html+=`<div class="ledger">`+b.entries.slice(0,14).map(e=>
+      `<div class="lrow"><span class="d">${e.date.slice(5)}</span><span class="m">${esc(e.memo)}</span>
+       <span class="a ${e.amt>=0?"plus":"minus"}">${e.amt>=0?"+":"−"}${won(Math.abs(e.amt))}</span></div>`).join("")+`</div>`;
+  }else{ html+=`<div class="empty">아직 장부가 비어 있습니다.</div>`; }
+
+  html+=`<h3 class="sec">회사 기록</h3>
+  <div class="stats">
+    <div><div class="k">누적 출근</div><div class="v">${S.attend.days}<small>일</small></div></div>
+    <div><div class="k">완료 단계</div><div class="v">${S.work.stages.filter(s=>s.done).length}<small>/${S.work.stages.length}</small></div></div>
+    <div><div class="k">업무일지</div><div class="v">${S.logs.length}<small>건</small></div></div>
+    <div><div class="k">편성 일정</div><div class="v">${S.upcoming.length}<small>건</small></div></div>
+  </div>
+
+  <h3 class="sec">설정</h3>
+  <div class="row">
+    <div style="flex:1;min-width:130px"><label class="fl" for="sLimit">월 배달 한도</label><input type="number" id="sLimit" value="${b.deliveryLimit}" step="10000"></div>
+    <div style="flex:1;min-width:130px"><label class="fl" for="sConv">1회 전환액</label><input type="number" id="sConv" value="${b.convert}" step="1000"></div>
+  </div>
+  <div class="row" style="margin-top:10px">
+    <div style="flex:2;min-width:150px"><label class="fl" for="sGoal">목표</label><input type="text" id="sGoal" value="${esc(b.goalName)}"></div>
+    <div style="flex:1;min-width:120px"><label class="fl" for="sTar">목표 금액</label><input type="number" id="sTar" value="${b.goalTarget}" step="5000"></div>
+  </div>
+  <button class="btn ghost sm" data-act="savecfg" style="margin-top:10px">설정 저장</button>
+
+  <div class="hr"></div>
+  <h3 class="sec">백업·복원</h3>
+  <div class="row">
+    <button class="btn ghost sm" data-act="export">JSON 내보내기</button>
+    <button class="btn ghost sm" data-act="showjson">JSON 보기</button>
+    <button class="btn ghost sm" data-act="importui">JSON으로 복원</button>
+  </div>
+  <div id="ioBox" style="margin-top:10px"></div>`;
+  return html;
+}, after(){
+  const b=S.budget;
+  const push=(amt,memo)=>{ b.entries.unshift({date:todayStr(), amt:amt, memo:memo}); b.entries=b.entries.slice(0,200); };
+  P.querySelector('[data-act="approve"]').onclick=()=>{
+    const v=Math.max(0,+document.getElementById("dAmt").value||0);
+    b.deliveryUsed+=v; push(0,"배달 승인 "+won(v)+"원 (한도 내)");
+    save(); openPanel("safe"); toast("승인했습니다. 오늘은 잘 드세요.");
+  };
+  P.querySelector('[data-act="convert"]').onclick=()=>{
+    b.balance+=b.convert; b.savedCount++; push(b.convert,"배달 대신 제작비 적립");
+    save(); render(); openPanel("safe");
+    const left=Math.max(0,b.goalTarget-b.balance);
+    toast(left>0?esc(b.goalName)+"까지 "+won(left)+"원 남았습니다.":esc(b.goalName)+" 목표 달성.");
+  };
+  P.querySelector('[data-act="spend"]').onclick=()=>{
+    const v=Math.max(0,+document.getElementById("eAmt").value||0), m=document.getElementById("eMemo").value.trim()||"제작비 지출";
+    if(!v){ toast("금액을 입력해 주세요."); return; }
+    b.balance-=v; push(-v,m); save(); render(); openPanel("safe");
+  };
+  P.querySelector('[data-act="deposit"]').onclick=()=>{
+    const v=Math.max(0,+document.getElementById("eAmt").value||0), m=document.getElementById("eMemo").value.trim()||"월급에서 제작비 이체";
+    if(!v){ toast("금액을 입력해 주세요."); return; }
+    b.balance+=v; push(v,m); save(); render(); openPanel("safe");
+  };
+  P.querySelector('[data-act="savecfg"]').onclick=()=>{
+    b.deliveryLimit=+document.getElementById("sLimit").value||0;
+    b.convert=+document.getElementById("sConv").value||0;
+    b.goalName=document.getElementById("sGoal").value.trim()||"제작비";
+    b.goalTarget=+document.getElementById("sTar").value||0;
+    save(); openPanel("safe"); toast("설정을 저장했습니다.");
+  };
+  const io=()=>document.getElementById("ioBox");
+  P.querySelector('[data-act="showjson"]').onclick=()=>{
+    io().innerHTML=`<label class="fl">아래 내용을 복사해 두면 언제든 복원할 수 있습니다</label>
+      <textarea readonly style="min-height:140px;font-family:'IBM Plex Mono',monospace;font-size:11.5px">${esc(JSON.stringify(S))}</textarea>`;
+  };
+  P.querySelector('[data-act="export"]').onclick=()=>{
+    const name="solent-"+todayStr()+".json";
+    try{
+      const blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a"); a.href=url; a.download=name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+      toast("백업 파일을 저장했습니다.");
+    }catch(e){
+      io().innerHTML=`<label class="fl">파일 저장을 쓸 수 없어 내용을 펼쳤습니다. 복사해서 보관하세요</label>
+      <textarea readonly style="min-height:140px;font-family:'IBM Plex Mono',monospace;font-size:11.5px">${esc(JSON.stringify(S,null,2))}</textarea>`;
+    }
+  };
+  P.querySelector('[data-act="importui"]').onclick=()=>{
+    io().innerHTML=`<label class="fl" for="impBox">백업해 둔 JSON을 붙여넣고 복원하세요. 현재 기록은 덮어씁니다</label>
+      <textarea id="impBox" style="min-height:120px;font-family:'IBM Plex Mono',monospace;font-size:11.5px"></textarea>
+      <button class="btn sm" id="impGo" style="margin-top:8px">복원하기</button>`;
+    document.getElementById("impGo").onclick=()=>{
+      try{
+        const o=JSON.parse(document.getElementById("impBox").value);
+        if(!o||typeof o!=="object") throw 0;
+        merge(o); rollMonth(); save(); faceUrls={}; loadFaces(); render(); openPanel("safe");
+        toast("복원했습니다.");
+      }catch(e){ toast("JSON을 읽지 못했습니다. 내용을 다시 확인해 주세요."); }
+    };
+  };
+}}
+
+};}
+let sel_actor=null;
+boot();
+
+/* ---- 설치형 앱 등록 ---- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+let deferredPrompt=null;
+window.addEventListener("beforeinstallprompt",e=>{
+  e.preventDefault(); deferredPrompt=e;
+  const bar=document.getElementById("installBar");
+  if(bar){ bar.hidden=false;
+    bar.querySelector("button").onclick=async()=>{
+      bar.hidden=true; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; };
+  }
+});
+window.addEventListener("appinstalled",()=>{ const b=document.getElementById("installBar"); if(b) b.hidden=true; });
+</script>
+</body>
+</html>
