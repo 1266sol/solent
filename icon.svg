@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-<rect width="512" height="512" fill="#2F5BEA"/>
-<circle cx="256" cy="256" r="118" fill="none" stroke="#FFFFFF" stroke-width="34"/>
-<path d="M256 138 A118 118 0 0 1 374 256" fill="none" stroke="#F6C453" stroke-width="34" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="26" fill="#FFFFFF"/>
-</svg>
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe4ec"/><stop offset="1" stop-color="#ffc9d9"/></linearGradient></defs>
+<rect width="512" height="512" fill="url(#g)"/>
+<circle cx="256" cy="256" r="176" fill="none" stroke="#d9a441" stroke-width="6"/>
+<g transform="translate(256 256) scale(11) translate(-12 -12)">
+<path d="M12 3C13.62 10.38 13.62 10.38 21 12C13.62 13.62 13.62 13.62 12 21C10.38 13.62 10.38 13.62 3 12C10.38 10.38 10.38 10.38 12 3Z" fill="#ffd86b" stroke="#9e2f5e" stroke-width="1.1" stroke-linejoin="round"/>
+<path d="M19.5 2.5C19.86 4.14 19.86 4.14 21.5 4.5C19.86 4.86 19.86 4.86 19.5 6.5C19.14 4.86 19.14 4.86 17.5 4.5C19.14 4.14 19.14 4.14 19.5 2.5Z" fill="#ffd86b" stroke="#9e2f5e" stroke-width="1.1" stroke-linejoin="round"/>
+</g></svg>
