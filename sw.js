@@ -1,5 +1,5 @@
-/* SOL ENT. service worker — 앱 껍데기 캐시 */
-const CACHE = "solent-v1";
+/* SOL MANAGER service worker — 앱 껍데기 캐시 */
+const CACHE = "solmanager-v1";
 const SHELL = [
   "./", "./index.html", "./manifest.webmanifest",
   "./icon-192.png", "./icon-512.png", "./icon-180.png", "./icon-maskable-512.png"
