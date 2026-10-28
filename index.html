@@ -62,7 +62,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .sc-icon{display:inline-block;flex:none;vertical-align:middle;stroke:var(--icon-stroke)}
 main{max-width:640px;margin:0 auto;padding:16px 16px 24px}
 
-header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:8px 0 20px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 12px;margin:8px 0 20px}
+header.top h1{white-space:nowrap}
 header.top h1{margin:2px 0 0;font:700 24px/32px var(--font-display);letter-spacing:-.01em}
 .brand{color:var(--gold-text)}
 
@@ -254,6 +255,14 @@ function seed() {
       { id: uid(), t: "폰 내려놓고 일찍 눕기" },
     ],
     shifts: [], ideas: [], reviews: {},
+    career: {
+      skills: [
+        { id: uid(), t: "학사·교육 도메인 설계", why: "요구사항 분석부터 DB 설계까지 말할 수 있게", until: "2027-04-30", done: false },
+        { id: uid(), t: "테스트 코드 (JUnit·통합 테스트)", why: "어느 회사 면접에서나 묻는 기본기", until: "2027-04-30", done: false },
+        { id: uid(), t: "AI 도구로 개발하기 (Claude Code·Codex)", why: "이미 하고 있는 걸 기록으로 남기기", until: "2027-04-30", done: false },
+      ],
+      logs: [], monthly: {},
+    },
   };
 }
 
@@ -264,6 +273,7 @@ function load() {
   const base = seed();
   for (const k of Object.keys(base)) if (S[k] === undefined) S[k] = base[k];
   S.settings = Object.assign({}, base.settings, S.settings);
+  S.career = Object.assign({ skills: [], logs: [], monthly: {} }, S.career);
 }
 function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { toast("저장 실패 — 백업을 내려받아 두세요"); } }
 function day(k = TK()) {
@@ -304,8 +314,8 @@ function I(name, size = 20, mono = false) {
 }
 const SPARK = '<svg class="spark tl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12.9 11.1 12.9 11.1 21 12C12.9 12.9 12.9 12.9 12 21C11.1 12.9 11.1 12.9 3 12C11.1 11.1 11.1 11.1 12 3Z"/></svg><svg class="spark br" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12.9 11.1 12.9 11.1 21 12C12.9 12.9 12.9 12.9 12 21C11.1 12.9 11.1 12.9 3 12C11.1 11.1 11.1 11.1 12 3Z"/></svg>';
 const isEvening = () => new Date().getHours() >= (+S.settings.eveningHour || 18);
-const TAB_ICON = { today: () => isEvening() ? "moon" : "sun", projects: () => "wand", life: () => "home", stats: () => "charm-circle", settings: () => "sliders" };
-const TABS = [["today", "오늘"], ["projects", "프로젝트"], ["life", "생활"], ["stats", "기록"], ["settings", "설정"]];
+const TAB_ICON = { today: () => isEvening() ? "moon" : "sun", projects: () => "wand", career: () => "gem", life: () => "home", stats: () => "charm-circle" };
+const TABS = [["today", "오늘"], ["projects", "프로젝트"], ["career", "커리어"], ["life", "생활"], ["stats", "기록"]];
 function renderTabs() {
   document.getElementById("tabs").innerHTML = TABS.map(([k, l]) =>
     `<button data-a="tab" data-k="${k}" class="${tab === k ? "on" : ""}"><span class="ico">${I(TAB_ICON[k](), 22, tab !== k)}</span>${l}</button>`).join("");
@@ -334,6 +344,7 @@ function rToday() {
     <h2>${I(evening ? "moon" : "heart")}${evening ? "저녁 체크인" : "오늘 기분"} ${evening ? `<span class="hint">${d.mood ? "기록했어요" : "지금 기분은?"}</span>` : ""}</h2>
     <div class="moods">${[1, 2, 3, 4, 5].map(m => `<button data-a="mood" data-m="${m}" class="${d.mood === m ? "on" : ""}"><b class="num">${m}</b><span>${MOOD[m]}</span></button>`).join("")}</div>
     <input type="text" data-c="note" value="${esc(d.note)}" placeholder="한 줄 메모 (선택)">
+    ${!weekend && evening ? `<label class="row" style="margin-top:10px;gap:10px"><input type="checkbox" class="check" data-c="drag" ${d.drag ? "checked" : ""}><span class="muted" style="color:var(--ink)">퇴근 후에도 회사 일·사람 생각을 곱씹었다</span></label>` : ""}
   </section>`;
   const careBlock = low ? `<section class="card care">
     <h2>${I("cloud")}${evening ? "오늘 저녁은 이것만" : "오늘은 이것만"} <span class="hint">하나만 해도 돼요</span></h2>
@@ -344,7 +355,7 @@ function rToday() {
   return `
   <header class="top">
     <div><div class="brand spell">Sol Manager</div><h1>${n.getMonth() + 1}월 ${n.getDate()}일 ${WD[n.getDay()]}요일</h1></div>
-    <span class="chip ${st.c}"><span class="dot"></span>${st.t}</span>
+    <div class="row"><span class="chip ${st.c}">${st.t}</span><button class="btn ghost sm" data-a="tab" data-k="settings" aria-label="설정">${I("sliders", 20)}</button></div>
   </header>
   ${evening ? moodBlock + careBlock : ""}
 
@@ -384,6 +395,8 @@ function rToday() {
       const p = S.projects.find(p => p.id === w.pid);
       return `<div class="li"><span class="grow">${esc(p ? p.title : "기타")}</span><span class="num">${(+w.chars).toLocaleString()}자</span><button class="btn ghost sm" data-a="wDel" data-i="${i}" aria-label="삭제">✕</button></div>`; }).join("")}</div>` : ""}
   </section>
+
+  ${pipeCards()}
 
   ${evening ? "" : moodBlock + careBlock}
 
@@ -465,6 +478,92 @@ function pCard(p) {
   </section>`;
 }
 
+/* ===== 커리어 파이프 ===== */
+const ymOf = k => k.slice(0, 7);
+function lastDayOfMonth(ym) { const [y, m] = ym.split("-").map(Number); return new Date(y, m, 0).getDate(); }
+function prevYm(ym) { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 2, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; }
+function monthDue() { // 말일 3일 전부터 이번 달, 1~5일엔 지난달
+  const k = TK(), ym = ymOf(k), dd = +k.slice(8);
+  if (dd >= lastDayOfMonth(ym) - 2 && S.career.monthly[ym] == null) return ym;
+  if (dd <= 5 && S.career.monthly[prevYm(ym)] == null) return prevYm(ym);
+  return null;
+}
+const weekLogs = () => { const wk = weekDays(TK()); return S.career.logs.filter(l => wk.includes(l.date)); };
+const skillName = id => (S.career.skills.find(s => s.id === id) || {}).t || "기타";
+const skillOptions = () => S.career.skills.filter(s => !s.done).map(s => `<option value="${s.id}">${esc(s.t)}</option>`).join("") + `<option value="">기타</option>`;
+function logForm(ph) {
+  return `<div class="row wrap"><input type="text" id="clT" class="grow" style="flex-basis:100%" placeholder="${ph}">
+    <select id="clS" class="grow">${skillOptions()}</select><button class="btn primary" data-a="clAdd">기록</button></div>`;
+}
+function pipeCards() {
+  const wd = new Date().getDay(), out = [];
+  const due = monthDue();
+  if (due) out.push(`<section class="card" style="border-color:var(--gold-500)">
+    <h2>${I("gem")}${+due.slice(5)}월 파이프 점검</h2>
+    <p style="margin:0 0 10px">내일 이직 면접을 본다면, ${+due.slice(5)}월에 한 일로 말할 거리가 있나요?</p>
+    <input type="text" id="mT" placeholder="있다면 한 줄로 (회사 밖 언어로)">
+    <div class="row" style="margin-top:10px"><button class="btn primary grow" data-a="month" data-v="1" data-ym="${due}">있다</button><button class="btn grow" data-a="month" data-v="0" data-ym="${due}">없다</button></div>
+  </section>`);
+  if ([4, 5, 6, 0].includes(wd) && !weekLogs().length) out.push(`<section class="card">
+    <h2>${I("gem")}이번 주 쌓인 것 <span class="hint">회사 밖에서도 통하는 것 하나</span></h2>
+    ${logForm("예: 수강신청 테이블 인덱스 설계로 조회 속도 개선")}
+  </section>`);
+  return out.join("");
+}
+function rCareer() {
+  const C = S.career, k = TK(), ym = ymOf(k);
+  const months = Array.from({ length: 6 }, (_, i) => { let m = ym; for (let j = 0; j < 5 - i; j++) m = prevYm(m); return m; });
+  const monthLogs = C.logs.filter(l => ymOf(l.date) === ym).length;
+  const starred = C.logs.filter(l => l.star);
+  const groups = {}; starred.forEach(l => (groups[l.skill || ""] = groups[l.skill || ""] || []).push(l));
+  const logs = [...C.logs].sort((a, b) => b.date.localeCompare(a.date));
+  return `
+  <header class="top"><div><div class="brand spell">Career Pipe</div><h1>커리어 파이프</h1></div><span class="chip">이번 달 ${monthLogs}개</span></header>
+
+  <section class="card">
+    <h2>${I("gem")}파이프 점검 <span class="hint">면접에서 말할 거리가 있었나</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;text-align:center">
+      ${months.map(m => { const r = C.monthly[m]; const st = r == null ? (m === ym ? "진행 중" : "–") : r.ok ? "있음" : "없음";
+        return `<div><div class="chip ${r == null ? "" : r.ok ? "ok" : "bad"}" style="justify-content:center;width:100%;padding:4px 0">${r && r.ok ? I("check", 14, true) : r ? I("close", 14, true) : "&nbsp;"}</div>
+          <div class="muted" style="margin-top:4px">${+m.slice(5)}월</div><div class="muted" style="font-size:11px;line-height:14px">${st}</div></div>`; }).join("")}
+    </div>
+    ${months.map(m => C.monthly[m]).filter(r => r && r.t).length ? `<div class="list" style="margin-top:10px">${months.filter(m => C.monthly[m] && C.monthly[m].t).reverse().map(m => `<div class="li"><span class="tag">${+m.slice(5)}월</span><span class="grow">${esc(C.monthly[m].t)}</span></div>`).join("")}</div>` : ""}
+    <p class="muted" style="margin:10px 0 0">매달 말일 3일 전부터 오늘 탭에 점검 카드가 떠요.</p>
+  </section>
+
+  <section class="card">
+    <h2>${I("plus")}성과 기록 <span class="hint">주 1개면 충분해요</span></h2>
+    ${logForm("회사 이름 없이도 통하는 문장으로")}
+    ${logs.length ? `<div class="list" style="margin-top:10px">${logs.map(l => `<div class="li">
+      <button class="btn ghost sm" data-a="clStar" data-id="${l.id}" aria-label="이력서용 표시" style="padding:4px">${I("star", 20, !l.star)}</button>
+      <div class="grow">${esc(l.t)}<div class="muted">${l.date.slice(5).replace("-", "/")} · ${esc(skillName(l.skill))}</div></div>
+      <button class="btn ghost sm" data-a="clDel" data-id="${l.id}" aria-label="삭제">✕</button></div>`).join("")}</div>`
+      : `<div class="empty-note" style="margin-top:8px">아직 기록이 없어요. "무엇을 / 어떤 기술로 / 결과가 어땠는지" 순서로 적으면 그대로 이력서 문장이 돼요.</div>`}
+  </section>
+
+  <section class="card">
+    <h2>${I("star")}통용 기술 <span class="hint">6개월 단위로 2~3개</span></h2>
+    <div class="list">${C.skills.map(sk => { const n = C.logs.filter(l => l.skill === sk.id).length;
+      return `<div class="li" style="align-items:flex-start"><input type="checkbox" class="check" data-c="skDone" data-id="${sk.id}" ${sk.done ? "checked" : ""} style="margin-top:2px">
+        <div class="grow"><div style="${sk.done ? "text-decoration:line-through;color:var(--ink-muted)" : ""}">${esc(sk.t)}</div>
+          <div class="muted">${sk.why ? esc(sk.why) + " · " : ""}기록 ${n}개${sk.until ? ` · ${ddLabel(sk.until)}` : ""}</div></div>
+        <button class="btn ghost sm" data-a="skDel" data-id="${sk.id}" aria-label="삭제">✕</button></div>`; }).join("")}</div>
+    <details style="margin-top:10px"><summary>기술 추가</summary>
+      <input type="text" id="skT" placeholder="기술 이름" style="margin-top:8px">
+      <input type="text" id="skW" placeholder="왜 필요한지 한 줄" style="margin-top:8px">
+      <div class="row" style="margin-top:8px"><input type="date" id="skU" value="${addDays(k, 182)}"><button class="btn sm" data-a="skAdd">추가</button></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>${I("letter")}이력서 재료 <span class="hint">별 표시한 기록만</span></h2>
+    ${starred.length ? `${Object.entries(groups).map(([sid, ls]) => `<div style="margin-bottom:10px"><div class="tag" style="display:inline-block;margin-bottom:4px">${esc(skillName(sid))}</div>
+      <ul style="margin:0;padding-left:18px">${ls.map(l => `<li>${esc(l.t)}</li>`).join("")}</ul></div>`).join("")}
+      <button class="btn sm" data-a="copyResume">${I("check", 16, true)}텍스트로 복사</button>`
+      : `<div class="empty-note">성과 기록에서 별을 누르면 여기 모여요.</div>`}
+  </section>`;
+}
+
 /* ===== 생활 ===== */
 function rLife() {
   const ym = TK().slice(0, 7);
@@ -524,6 +623,9 @@ function rStats() {
   const wAlba = S.shifts.filter(s => wk.includes(s.date)).reduce((a, s) => a + shiftMin(s), 0);
   const wkey = isoWeek(new Date()), rv = S.reviews[wkey] || { good: "", stuck: "", next: "" };
   const past = Object.keys(S.reviews).filter(k => k !== wkey).sort().reverse();
+  const d28 = Array.from({ length: 28 }, (_, i) => addDays(TK(), -i)).map(peek).filter(Boolean);
+  const dragDays = d28.filter(d => d.drag), calm = d28.filter(d => !d.drag && d.mood);
+  const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : "–";
   return `
   <header class="top"><div><div class="brand spell">Sol Manager</div><h1>기록</h1></div><span class="chip">이번 주 ${wk[0].slice(5).replace("-", "/")}–${wk[6].slice(5).replace("-", "/")}</span></header>
   <section class="card stats4">
@@ -537,13 +639,24 @@ function rStats() {
   <section class="card"><h2>${I("letter")}글자 수 · 14일 <span class="hint">별 = 목표 달성</span></h2>
     ${bars(writes, Math.max(goal, ...writes, 1), { labels, goal, label: "글자 수 추이", cls: v => goal && v >= goal ? "ok" : "", fmt: (v, i) => `${days[i]} · ${v.toLocaleString()}자` })}</section>
   <section class="card">
+    <h2>${I("cloud")}퇴근 후 회사 생각 <span class="hint">최근 4주</span></h2>
+    <div class="stats4">
+      <div class="stat"><span class="k">곱씹은 날</span><span class="v num">${dragDays.length}일</span></div>
+      <div class="stat"><span class="k">그날 기분 / 아닌 날</span><span class="v num">${avg(dragDays.map(d => d.mood).filter(Boolean))} / ${avg(calm.map(d => d.mood))}</span></div>
+    </div>
+    <p class="muted" style="margin:10px 0 0">저녁 체크인에서 체크한 날만 세요. 두 숫자 차이가 크면 회사에 쓰는 에너지가 저녁 기분까지 끌어내리고 있다는 뜻이에요.</p>
+  </section>
+  <section class="card">
     <h2>${I("crown")}주간 회고 <span class="hint">일요일 밤 5분</span></h2>
     <label class="muted">잘 된 것</label><textarea data-c="rv" data-f="good">${esc(rv.good)}</textarea>
     <label class="muted">막힌 것</label><textarea data-c="rv" data-f="stuck">${esc(rv.stuck)}</textarea>
     <label class="muted">다음 주 딱 3개</label><textarea data-c="rv" data-f="next">${esc(rv.next)}</textarea>
+    <label class="muted" style="display:block;margin-top:10px">이번 주 회사에 쓴 에너지 중 옮겨 갈 자산이 된 비율</label>
+    <div class="seg" style="margin-top:6px">${[0, 25, 50, 75, 100].map(v => `<button data-a="rvPipe" data-v="${v}" class="${rv.pipe === v ? "on" : ""}">${v}%</button>`).join("")}</div>
     ${past.length ? `<details style="margin-top:10px"><summary>지난 회고 ${past.length}개</summary>${past.map(k => { const r = S.reviews[k];
       return `<div style="margin-top:10px"><div class="tag num">${k}</div>${["good", "stuck", "next"].filter(f => r[f]).map(f => `<div class="muted" style="margin-top:4px;white-space:pre-wrap"><b>${{ good: "잘 된 것", stuck: "막힌 것", next: "다음 주" }[f]}</b> ${esc(r[f])}</div>`).join("")}</div>`; }).join("")}</details>` : ""}
-  </section>`;
+  </section>
+  <button class="btn ghost" data-a="tab" data-k="settings" style="width:100%">${I("sliders", 18)}설정 · 백업</button>`;
 }
 
 /* ===== 설정 ===== */
@@ -592,7 +705,7 @@ function applyTheme() {
 function render() {
   applyTheme();
   renderTabs();
-  const R = { today: rToday, projects: rProjects, life: rLife, stats: rStats, settings: rSettings }[tab];
+  const R = { today: rToday, projects: rProjects, career: rCareer, life: rLife, stats: rStats, settings: rSettings }[tab];
   document.getElementById("app").innerHTML = R();
 }
 
@@ -648,6 +761,20 @@ document.addEventListener("click", e => {
     case "rtAdd": { const t = document.getElementById("nrT").value.trim(); if (!t) return; S.routines.push({ id: uid(), t }); break; }
     case "rtDel": S.routines = S.routines.filter(r => r.id !== id); break;
     case "theme": S.settings.theme = el.dataset.v; break;
+    case "clAdd": { const t = document.getElementById("clT").value.trim(); if (!t) { toast("한 줄 적어 주세요"); return; }
+      S.career.logs.push({ id: uid(), date: TK(), t, skill: document.getElementById("clS").value, star: false }); toast("파이프에 쌓였어요"); break; }
+    case "clDel": S.career.logs = S.career.logs.filter(l => l.id !== id); break;
+    case "clStar": { const l = S.career.logs.find(l => l.id === id); l.star = !l.star; break; }
+    case "month": { const t = document.getElementById("mT").value.trim(); S.career.monthly[el.dataset.ym] = { ok: el.dataset.v === "1", t };
+      if (t && el.dataset.v === "1") S.career.logs.push({ id: uid(), date: TK(), t, skill: "", star: true });
+      toast(el.dataset.v === "1" ? "좋아요, 이력서 재료에 넣었어요" : "다음 달엔 하나 만들어 봐요"); break; }
+    case "skAdd": { const t = document.getElementById("skT").value.trim(); if (!t) return;
+      S.career.skills.push({ id: uid(), t, why: document.getElementById("skW").value.trim(), until: document.getElementById("skU").value, done: false }); break; }
+    case "skDel": if (!confirm("이 기술 목표를 지울까요? 기록은 남아요.")) return; S.career.skills = S.career.skills.filter(x => x.id !== id); break;
+    case "rvPipe": { const k = isoWeek(new Date()); S.reviews[k] = S.reviews[k] || { good: "", stuck: "", next: "" }; S.reviews[k].pipe = +el.dataset.v; break; }
+    case "copyResume": { const g = {}; S.career.logs.filter(l => l.star).forEach(l => (g[skillName(l.skill)] = g[skillName(l.skill)] || []).push(l.t));
+      const txt = Object.entries(g).map(([k2, ls]) => `[${k2}]\n` + ls.map(t => `- ${t}`).join("\n")).join("\n\n");
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("복사했어요"), () => toast("복사가 안 됐어요")); return; }
     case "export": download(`solmanager-${TK()}.json`, S); return;
     case "import": document.getElementById("importFile").click(); return;
     case "oldExport": try { download(`solent-old-${TK()}.json`, JSON.parse(localStorage.getItem(OLD_LS))); } catch (err) { toast("예전 기록을 읽지 못했어요"); } return;
@@ -665,6 +792,8 @@ document.addEventListener("change", e => {
     case "t3text": d.top3[+el.dataset.i].t = el.value.trim(); rerender = false; break;
     case "exMin": d.ex.min = el.value; if (+el.value > 0) d.ex.done = true; break;
     case "note": d.note = el.value; rerender = false; break;
+    case "drag": d.drag = el.checked; rerender = false; break;
+    case "skDone": S.career.skills.find(x => x.id === id).done = el.checked; break;
     case "care": d.care = el.checked ? [...new Set([...d.care, id])] : d.care.filter(x => x !== id); rerender = false; break;
     case "step": { const s = P(el.dataset.p).steps.find(s => s.id === id); s.done = el.checked; break; }
     case "pf": { const p = P(el.dataset.p); p[el.dataset.f] = el.value; rerender = ["status", "deadline", "type"].includes(el.dataset.f); break; }
@@ -680,7 +809,7 @@ document.addEventListener("change", e => {
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Enter" || e.isComposing) return;
-  const map = { ideaIn: "ideaAdd", wC: "wAdd", npT: "pAdd", ncT: "choreAdd", nrT: "rtAdd" };
+  const map = { ideaIn: "ideaAdd", wC: "wAdd", npT: "pAdd", ncT: "choreAdd", nrT: "rtAdd", clT: "clAdd", skT: "skAdd" };
   const t = e.target; let act = map[t.id];
   if (!act && t.id && t.id.startsWith("st_")) { document.querySelector(`[data-a=stepAdd][data-p="${t.id.slice(3)}"]`)?.click(); return; }
   if (act) { e.preventDefault(); document.querySelector(`[data-a=${act}]`)?.click(); }
