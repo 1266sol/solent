@@ -1,0 +1,17 @@
+{
+  "name": "SOL MANAGER",
+  "short_name": "SOL MANAGER",
+  "description": "1인 기업·프리랜서를 위한 생활 & 업무 매니저",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff6f8",
+  "theme_color": "#fff6f8",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

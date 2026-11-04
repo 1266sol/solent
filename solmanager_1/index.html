@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fff6f8" id="themeColor">
+<meta name="description" content="1인 기업·프리랜서를 위한 생활 & 업무 매니저">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SOL MANAGER">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>SOL MANAGER</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap">
+<style>
+/* ===== Stellar Charm 토큰 — Dawn(낮) 기본, Midnight(밤) ===== */
+:root{
+  --bg:#fff6f8; --surface:#fffbf2; --surface-raised:#ffffff;
+  --pink-100:#ffe4ec; --pink-200:#ffc9d9; --pink-300:#f9a3bf;
+  --border:#f3c6d4; --border-control:#c8608c;
+  --rose-500:#c23f76; --rose-600:#a8335f; --rose-ink:#9e2f5e; --on-primary:#ffffff;
+  --ink:#4a2236; --ink-muted:#7d4a65;
+  --star-200:#fff1b8; --star-400:#ffd86b; --on-star:#4a2236;
+  --gold-500:#d9a441; --gold-text:#8f6516;
+  --lilac-200:#ece2fb; --lilac-400:#b9a2ec; --lilac-text:#6b4fb0;
+  --success:#22766c; --success-tint:#dff3ef; --warning:#8f6516; --danger:#c0304f; --danger-tint:#ffe1e6;
+  --focus:#9e2f5e; --icon-stroke:#9e2f5e;
+  --icon-fill-star:#ffd86b; --icon-fill-pink:#ffc9d9; --icon-fill-lilac:#dccbf7; --icon-fill-wing:#ffffff;
+  --shadow-glow:0 6px 18px rgba(194,63,118,.16); --shadow-star:0 0 0 4px rgba(255,216,107,.45);
+  --font-display:"Gowun Batang","Noto Serif KR",serif;
+  --font-body:"Gowun Dodum","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  --font-spell:"Cinzel","Gowun Batang",serif;
+  color-scheme:light;
+}
+:root[data-theme="midnight"]{
+  --bg:#241726; --surface:#2e1d31; --surface-raised:#3a2540;
+  --pink-100:#4a2a44; --pink-200:#6b3a5e; --pink-300:#a85584;
+  --border:#5a3552; --border-control:#c27aa3;
+  --rose-500:#f28bb5; --rose-600:#ffa8ca; --rose-ink:#ffc2d8; --on-primary:#3a1028;
+  --ink:#fbeef3; --ink-muted:#d4b3c4;
+  --star-200:#4d3f1c; --star-400:#ffd86b; --on-star:#3a1028;
+  --gold-500:#e8bb5c; --gold-text:#f5d28a;
+  --lilac-200:#3d3058; --lilac-400:#b9a2ec; --lilac-text:#cdbaf5;
+  --success:#6fd3c2; --success-tint:#1f3a37; --warning:#f5d28a; --danger:#ff8fa6; --danger-tint:#4a1f2a;
+  --focus:#ffd86b; --icon-stroke:#ffc2d8;
+  --icon-fill-star:#d9a441; --icon-fill-pink:#8a3a66; --icon-fill-lilac:#5d4a8a; --icon-fill-wing:#4a2a44;
+  --shadow-glow:0 6px 22px rgba(0,0,0,.45); --shadow-star:0 0 0 4px rgba(255,216,107,.28);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/24px var(--font-body);-webkit-font-smoothing:antialiased;
+  padding-top:env(safe-area-inset-top);padding-bottom:calc(76px + env(safe-area-inset-bottom));transition:background .3s}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+.spell{font-family:var(--font-spell);font-weight:700;letter-spacing:.14em;font-size:12px;line-height:16px;text-transform:uppercase}
+.sc-icon{display:inline-block;flex:none;vertical-align:middle;stroke:var(--icon-stroke)}
+main{max-width:640px;margin:0 auto;padding:16px 16px 24px}
+
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 12px;margin:8px 0 20px}
+header.top h1{white-space:nowrap}
+header.top h1{margin:2px 0 0;font:700 24px/32px var(--font-display);letter-spacing:-.01em}
+.brand{color:var(--gold-text)}
+
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:999px;font-size:12px;line-height:18px;border:1px solid var(--border);background:var(--pink-100);color:var(--rose-ink);white-space:nowrap}
+.chip.accent{background:var(--pink-100);color:var(--rose-ink)}
+.chip.ok{background:var(--success-tint);color:var(--success);border-color:transparent}
+.chip.warn{background:var(--star-200);color:var(--warning);border-color:transparent}
+.chip.bad{background:var(--danger-tint);color:var(--danger);border-color:transparent}
+.chip.lilac{background:var(--lilac-200);color:var(--lilac-text);border-color:transparent}
+.chip .sc-icon{stroke:currentColor}
+
+/* 카드 — 골드 안쪽 프레임 */
+.card{position:relative;background:var(--surface-raised);border:1.5px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow-glow)}
+.card::before{content:"";position:absolute;inset:5px;border:1px solid var(--gold-500);border-radius:15px;pointer-events:none;opacity:.55}
+.card.hero{border-color:var(--gold-500);box-shadow:var(--shadow-star),var(--shadow-glow)}
+.spark{position:absolute;width:14px;height:14px;fill:var(--star-400);stroke:var(--gold-500);stroke-width:1.5}
+.spark.tl{top:-7px;left:18px}.spark.br{bottom:-7px;right:18px}
+.card h2{margin:0 0 12px;font:700 17px/24px var(--font-display);display:flex;align-items:center;gap:8px}
+.card h2 .hint{margin-left:auto;font:400 12px/16px var(--font-body);color:var(--ink-muted)}
+.card h2 > .btn{margin-left:auto}
+.muted{color:var(--ink-muted);font-size:13px;line-height:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2 .card{margin-bottom:0}
+.row{display:flex;align-items:center;gap:8px}
+.row.wrap{flex-wrap:wrap}
+.grow{flex:1;min-width:0}
+
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  background:var(--surface-raised);border:1.5px solid var(--border-control);border-radius:12px;padding:9px 12px;width:100%;min-width:0;outline:none;color:var(--ink)}
+input::placeholder,textarea::placeholder{color:var(--ink-muted);opacity:.8}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:2px}
+textarea{resize:vertical;min-height:64px}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1.5px solid var(--pink-300);border-radius:999px;padding:8px 16px;background:var(--pink-200);color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .15s,transform .15s}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--rose-500);border-color:transparent;color:var(--on-primary);box-shadow:var(--shadow-glow)}
+.btn.primary .sc-icon{stroke:currentColor}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--rose-ink);padding:6px 10px}
+.btn.sm{padding:5px 12px;font-size:13px;line-height:18px}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+
+.check{appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;border:1.5px solid var(--border-control);border-radius:6px;display:grid;place-items:center;cursor:pointer;margin:0;background:var(--surface-raised)}
+.check:checked{background:var(--rose-500);border-color:var(--rose-500)}
+.check:checked::after{content:"";width:6px;height:11px;border:solid var(--on-primary);border-width:0 2.5px 2.5px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.t3 input[type=text]{background:transparent;padding:8px 4px;border-radius:0;border:0;border-bottom:1px solid var(--border)}
+.t3 input[type=text]:focus{outline:none;border-bottom-color:var(--rose-500)}
+.t3 .done input[type=text]{text-decoration:line-through;color:var(--ink-muted)}
+.t3 .row{margin-bottom:4px}
+
+.big{font:700 30px/36px var(--font-display);letter-spacing:-.01em}
+.bar{height:8px;background:var(--pink-100);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.bar>i{display:block;height:100%;background:var(--rose-500);border-radius:99px;transition:width .3s}
+.bar.ok>i{background:var(--star-400)}
+
+.toggle{width:100%;padding:11px;border-radius:999px;border:1.5px dashed var(--border-control);background:transparent;color:var(--ink-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.toggle.on{border:1.5px solid var(--gold-500);background:var(--star-200);color:var(--warning);box-shadow:var(--shadow-star)}
+
+.moods{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px}
+.moods button{border:1.5px solid var(--border);background:var(--surface-raised);border-radius:16px;padding:8px 0 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;color:var(--ink)}
+.moods button b{font:700 18px/24px var(--font-display)}
+.moods button span{font-size:11px;line-height:16px;color:var(--ink-muted)}
+.moods button.on{background:var(--rose-500);border-color:var(--rose-500);color:var(--on-primary)}
+.moods button.on span{color:inherit}
+
+.care{background:var(--lilac-200);border-color:transparent}
+.care::before{border-color:var(--lilac-400)}
+.care h2{color:var(--lilac-text)}
+.care .item{display:flex;align-items:center;gap:10px;padding:7px 0;color:var(--ink)}
+.care .muted{color:var(--ink)}
+
+.dstrip{display:flex;gap:8px;overflow-x:auto;margin:0 -16px 12px;padding:4px 16px 8px;scrollbar-width:none}
+.dstrip::-webkit-scrollbar{display:none}
+.dcard{flex:none;min-width:150px;max-width:210px;background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:10px 14px}
+.dcard .d{font:700 20px/28px var(--font-spell);letter-spacing:.06em;color:var(--rose-ink)}
+.dcard .t{font-size:12px;line-height:18px;color:var(--ink-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dcard.hot{border-color:var(--danger);background:var(--danger-tint)}
+.dcard.hot .d{color:var(--danger)}
+.dcard.hot .t{color:var(--ink)}
+
+.list .li{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+.list .li:first-child{border-top:0}
+.tag{font-size:11px;line-height:16px;padding:2px 8px;border-radius:999px;background:var(--lilac-200);color:var(--lilac-text)}
+.proj{cursor:pointer}
+.proj .ttl{font:700 16px/24px var(--font-display)}
+.proj .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
+.pbody{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);cursor:default}
+.pbody label.row{display:flex}
+.pbody label{display:block;font-size:12px;color:var(--ink-muted);margin:10px 0 4px}
+.group-h{margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:center;color:var(--gold-text);font:700 14px/20px var(--font-display)}
+.group-h .num{font:400 12px var(--font-body);color:var(--ink-muted)}
+.banner{padding:10px 14px;border-radius:12px;background:var(--star-200);color:var(--warning);font-size:13px;margin-bottom:12px}
+.stat{display:flex;flex-direction:column;gap:2px}
+.stat .k{font-size:12px;color:var(--ink-muted)}
+.stat .v{font:700 22px/28px var(--font-display)}
+.stats4{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.amt-in{color:var(--success)}
+.amt-out{color:var(--ink)}
+svg.chart{width:100%;height:auto;display:block}
+svg.chart .b{fill:var(--rose-500)}
+svg.chart .b.low{fill:var(--lilac-400)}
+svg.chart .b.ok{fill:var(--star-400);stroke:var(--gold-500);stroke-width:1}
+svg.chart .gl{stroke:var(--gold-500);stroke-dasharray:3 3;stroke-width:1}
+svg.chart .lbl{fill:var(--ink-muted);font-size:9px;font-family:var(--font-body)}
+svg.chart .empty{fill:var(--border)}
+
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1.5px solid var(--border);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs button{border:0;background:transparent;padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;line-height:16px;color:var(--ink-muted);cursor:pointer}
+nav.tabs button .sc-icon{stroke:var(--ink-muted)}
+nav.tabs button .ico{padding:2px 14px;border-radius:999px;display:grid;place-items:center}
+nav.tabs button.on{color:var(--rose-ink)}
+nav.tabs button.on .ico{background:var(--pink-100)}
+nav.tabs button.on .sc-icon{stroke:var(--icon-stroke)}
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--rose-500);color:var(--on-primary);padding:8px 18px;border-radius:999px;font-size:13px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none;box-shadow:var(--shadow-glow);display:flex;gap:6px;align-items:center}
+.toast.show{opacity:1}
+details summary{cursor:pointer;color:var(--rose-ink);font-size:13px}
+.empty-note{color:var(--ink-muted);font-size:13px;padding:6px 0}
+.seg{display:flex;gap:4px;background:var(--pink-100);border-radius:999px;padding:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:999px;padding:6px 8px;font-size:13px;color:var(--ink-muted);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--rose-500);color:var(--on-primary)}
+@media (max-width:380px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav class="tabs"><div class="in" id="tabs"></div></nav>
+<div class="toast" id="toast"></div>
+<input type="file" id="importFile" accept="application/json" hidden>
+
+<script>
+/* ===== SOL MANAGER — 저장은 localStorage 한 키(JSON 문서 S) ===== */
+const LS = "solmanager.v1";
+const OLD_LS = "solent.v1";
+const uid = () => Math.random().toString(36).slice(2, 9);
+const pad = n => String(n).padStart(2, "0");
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const TK = () => ymd(new Date());
+const parseD = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+const between = (a, b) => Math.round((parseD(b) - parseD(a)) / 864e5); // b - a (일)
+const addDays = (s, n) => { const d = parseD(s); d.setDate(d.getDate() + n); return ymd(d); };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const WD = ["일", "월", "화", "수", "목", "금", "토"];
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  const y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+  return `${t.getUTCFullYear()}-W${pad(Math.ceil(((t - y0) / 864e5 + 1) / 7))}`;
+}
+function weekDays(ref) { // 월~일
+  const d = parseD(ref); const off = (d.getDay() + 6) % 7; const mon = addDays(ref, -off);
+  return Array.from({ length: 7 }, (_, i) => addDays(mon, i));
+}
+const steps = arr => arr.map(t => ({ id: uid(), t, done: false }));
+
+function seed() {
+  return {
+    v: 1,
+    settings: { name: "SOL", writeGoal: 2000, wage: 0, eveningHour: 18, theme: "time" },
+    days: {},
+    projects: [
+      { id: uid(), title: "던전에도 근로기준법이 적용됩니다", type: "창작", status: "focus", deadline: "2026-11-08",
+        goal: "대원 웹소설 공모전 제출 (현대 판타지)", note: "", contest: true, cstage: "prep", announce: "", steps: steps(["시놉시스 최종본 확정", "원고 퇴고", "제출 양식·분량 확인", "제출"]) },
+      { id: uid(), title: "바다 밑 하루", type: "창작", status: "focus", deadline: "2026-11-08",
+        goal: "SF스토리 공모전 AI영상 부문 제출 — 제출하면 영상 작업은 끝", note: "", contest: true, cstage: "prep", announce: "", steps: steps(["남은 컷 생성", "편집·자막·사운드", "최종 렌더", "제출"]) },
+      { id: uid(), title: "현대로맨스 원고 (계약 출판사)", type: "창작", status: "next", deadline: "",
+        goal: "출판사 원고 요청 대응", note: "남주: 컨벤션·MICE 업계 / 여주: 영어 통역 프리랜서", steps: steps(["인물·관계 설정", "시놉시스", "원고 집필", "출판사 제출"]) },
+      { id: uid(), title: "나가주세요, 제발!", type: "창작", status: "next", deadline: "",
+        goal: "25~30화 비축 → 플랫폼 연재·투베 도전 → 출판사 컨택, 선인세", note: "", steps: steps(["25화까지 비축", "30화까지 비축", "플랫폼 연재 시작", "투베 진입", "출판사 컨택"]) },
+      { id: uid(), title: "브런치북 2막", type: "창작", status: "wait", deadline: "",
+        goal: "공모전 제출 완료 · 2027년 2월 발표", note: "", contest: true, cstage: "submitted", announce: "", steps: [] },
+      { id: uid(), title: "캐릭터·브랜딩", type: "부업", status: "hold", deadline: "",
+        goal: "후순위 — 웹소설 일정이 끝난 뒤 다시 보기", note: "부캉이 · 부산 개복치 · 브랜딩 스튜디오", steps: [] },
+      { id: uid(), title: "그 외 AI 영상", type: "창작", status: "hold", deadline: "",
+        goal: "당분간 제작하지 않음", note: "환영관 · 하와이 스낵바 등", steps: [] },
+    ],
+    chores: [
+      { id: uid(), t: "방 청소", every: 7, last: "" },
+      { id: uid(), t: "빨래", every: 4, last: "" },
+      { id: uid(), t: "분리수거·쓰레기", every: 4, last: "" },
+      { id: uid(), t: "장보기", every: 7, last: "" },
+      { id: uid(), t: "침구 세탁", every: 14, last: "" },
+      { id: uid(), t: "화장실 청소", every: 10, last: "" },
+    ],
+    routines: [
+      { id: uid(), t: "밖에 나가서 10분 걷기" },
+      { id: uid(), t: "샤워하고 옷 갈아입기" },
+      { id: uid(), t: "물 한 컵, 끼니 한 번 제대로 먹기" },
+      { id: uid(), t: "오늘 글은 메모 3줄만 — 그걸로 충분" },
+      { id: uid(), t: "편한 사람에게 메시지 하나 보내기" },
+      { id: uid(), t: "폰 내려놓고 일찍 눕기" },
+    ],
+    shifts: [], ideas: [], reviews: {},
+    money: { fixed: [], tx: [] },
+    career: {
+      skills: [
+        { id: uid(), t: "학사·교육 도메인 설계", why: "요구사항 분석부터 DB 설계까지 말할 수 있게", until: "2027-04-30", done: false },
+        { id: uid(), t: "테스트 코드 (JUnit·통합 테스트)", why: "어느 회사 면접에서나 묻는 기본기", until: "2027-04-30", done: false },
+        { id: uid(), t: "AI 도구로 개발하기 (Claude Code·Codex)", why: "이미 하고 있는 걸 기록으로 남기기", until: "2027-04-30", done: false },
+      ],
+      logs: [], monthly: {},
+    },
+  };
+}
+
+let S;
+function load() {
+  try { const raw = localStorage.getItem(LS); S = raw ? JSON.parse(raw) : seed(); }
+  catch (e) { S = seed(); }
+  const base = seed();
+  for (const k of Object.keys(base)) if (S[k] === undefined) S[k] = base[k];
+  S.settings = Object.assign({}, base.settings, S.settings);
+  S.career = Object.assign({ skills: [], logs: [], monthly: {} }, S.career);
+  S.money = Object.assign({ fixed: [], tx: [] }, S.money);
+  S.projects.forEach(p => { // 공모전 필드 보강 (기존 데이터)
+    if (p.contest === undefined) { p.contest = /공모/.test((p.goal || "") + (p.title || "")); p.cstage = p.contest ? (p.status === "wait" ? "submitted" : p.status === "done" ? "submitted" : "prep") : ""; }
+    if (p.announce === undefined) p.announce = "";
+  });
+}
+function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { toast("저장 실패 — 백업을 내려받아 두세요"); } }
+function day(k = TK()) {
+  if (!S.days[k]) S.days[k] = { top3: [{ t: "", done: false }, { t: "", done: false }, { t: "", done: false }], ex: { done: false, min: "" }, mood: null, note: "", write: [], care: [] };
+  return S.days[k];
+}
+const peek = k => S.days[k];
+let toastT;
+function toast(m) { const el = document.getElementById("toast"); el.textContent = m; el.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove("show"), 1600); }
+
+/* ===== 상태 ===== */
+let tab = "today";
+let viewDate = null; // null = 오늘
+const VD = () => viewDate || TK();
+let openP = null;
+const STATUS = { focus: "집중", next: "다음", wait: "결과 대기", hold: "보류", done: "완료" };
+const STATUS_CHIP = { focus: "accent", next: "", wait: "ok", hold: "", done: "ok" };
+const TYPES = ["창작", "본업", "부업", "생활", "외주"];
+const MOOD = ["", "바닥", "가라앉음", "보통", "괜찮음", "좋음"];
+
+function writeTotal(k) { const d = peek(k); return d ? d.write.reduce((a, w) => a + (+w.chars || 0), 0) : 0; }
+function choreState(c) {
+  if (!c.last) return { due: 0, label: "기록 없음", cls: "warn" };
+  const left = c.every - between(c.last, TK());
+  if (left < 0) return { due: left, label: `${-left}일 밀림`, cls: "bad" };
+  if (left === 0) return { due: 0, label: "오늘", cls: "warn" };
+  return { due: left, label: `${left}일 뒤`, cls: "" };
+}
+const CSTAGE = [["prep", "준비"], ["submitted", "제출 완료"], ["win", "수상"], ["lose", "낙선"]];
+function contestChip(p) {
+  if (!p.contest) return "";
+  if (p.cstage === "win") return `<span class="chip ok">${I("crown", 14, true)}수상</span>`;
+  if (p.cstage === "lose") return `<span class="chip">낙선</span>`;
+  if (p.cstage === "submitted") {
+    if (!p.announce) return `<span class="chip lilac">발표일 미정</span>`;
+    const n = between(TK(), p.announce);
+    return n < 0 ? `<span class="chip warn">결과 확인</span>` : `<span class="chip lilac num">발표 ${ddLabel(p.announce)}</span>`;
+  }
+  return p.deadline ? `<span class="chip ${between(TK(), p.deadline) <= 7 ? "bad" : ""} num">마감 ${ddLabel(p.deadline)}</span>` : `<span class="chip">마감 미정</span>`;
+}
+function dateItems() { // 오늘 탭 D-day 띠: 준비 중이면 마감, 제출했으면 발표
+  const out = [];
+  S.projects.forEach(p => {
+    if (p.status === "hold") return;
+    if (p.contest) {
+      if (p.cstage === "prep" && p.deadline) out.push({ date: p.deadline, kind: "마감", p });
+      else if (p.cstage === "submitted" && p.announce) out.push({ date: p.announce, kind: "발표", p });
+    } else if (p.deadline && p.status !== "done") out.push({ date: p.deadline, kind: "마감", p });
+  });
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+function ddLabel(dl) { const n = between(TK(), dl); return n === 0 ? "D-DAY" : n > 0 ? `D-${n}` : `D+${-n}`; }
+function shiftMin(s) { if (!s.in || !s.out) return 0; const [a, b] = s.in.split(":").map(Number), [c, d] = s.out.split(":").map(Number); let m = (c * 60 + d) - (a * 60 + b); if (m < 0) m += 1440; return m; }
+const hm = m => `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ""}`;
+
+/* ===== 탭 ===== */
+/* Stellar Charm 오리지널 아이콘 (듀오톤, 24 그리드, 선 1.6) */
+const SC = {"sparkle": {"label": "반짝", "role": "star", "p": [["M12 3C13.62 10.38 13.62 10.38 21 12C13.62 13.62 13.62 13.62 12 21C10.38 13.62 10.38 13.62 3 12C10.38 10.38 10.38 10.38 12 3Z", 1], ["M19.5 2.5C19.86 4.14 19.86 4.14 21.5 4.5C19.86 4.86 19.86 4.86 19.5 6.5C19.14 4.86 19.14 4.86 17.5 4.5C19.14 4.14 19.14 4.14 19.5 2.5Z", 1]]}, "star": {"label": "별", "role": "star", "p": [["M12.00 3.60 L14.53 9.32 L20.75 9.96 L16.09 14.13 L17.41 20.24 L12.00 17.10 L6.59 20.24 L7.91 14.13 L3.25 9.96 L9.47 9.32Z", 1]]}, "moon": {"label": "달", "role": "lilac", "p": [["M19.5 15.2A8.3 8.3 0 1 1 9.2 4.2a6.6 6.6 0 0 0 10.3 11Z", 1], ["M18 3.8C18.396 5.604 18.396 5.604 20.2 6C18.396 6.396 18.396 6.396 18 8.2C17.604 6.396 17.604 6.396 15.8 6C17.604 5.604 17.604 5.604 18 3.8Z", 0]]}, "sun": {"label": "해", "role": "star", "p": [["M12 8a4 4 0 1 1 0 8a4 4 0 1 1 0-8Z", 1], ["M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6", 0]]}, "heart": {"label": "하트", "role": "pink", "p": [["M12 20s-7.6-4.5-7.6-10.1A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.6 2.7C19.6 15.5 12 20 12 20Z", 1]]}, "wand": {"label": "요술봉", "role": "star", "p": [["M4 20.5 13.2 11.3", 0], ["M16.5 2.9000000000000004C17.328 6.672 17.328 6.672 21.1 7.5C17.328 8.328 17.328 8.328 16.5 12.1C15.672 8.328 15.672 8.328 11.9 7.5C15.672 6.672 15.672 6.672 16.5 2.9000000000000004Z", 1], ["M6.5 6.2v2M5.5 7.2h2M20 13.5v2M19 14.5h2", 0]]}, "wing": {"label": "날개", "role": "wing", "p": [["M3.5 16.5C3.5 9.6 9.3 5 20.5 5c-.6 2.6-3 4.1-6 4.6 2.6.4 4 1.6 4.1 2.9-1.9 1.4-4.2 1.6-6.4 1.3 1.8.9 2.4 2 2 3.2-3.3 1.6-7.6 1.6-10.7-.5Z", 1], ["M7 15c2.3-3.2 5.4-4.9 9-5.4M8 16.2c1.6-1 3.2-1.6 4.6-1.9", 0]]}, "gem": {"label": "보석", "role": "lilac", "p": [["M7 4h10l4 5-9 11L3 9Z", 1], ["M3 9h18M8.6 9 12 20l3.4-11M9.5 4 12 9l2.5-5", 0]]}, "ribbon": {"label": "리본", "role": "pink", "p": [["M12 11C9.4 7.2 4 6.6 4 10.4S9.4 13.8 12 11Z", 1], ["M12 11c2.6-3.8 8-4.4 8-.6S14.6 13.8 12 11Z", 1], ["M11 12.2 8.3 19.5l2.4-1 1.3 2 .8-8M13 12.2l2.7 7.3-2.4-1-1.3 2", 0]]}, "crown": {"label": "왕관", "role": "star", "p": [["M4.2 17 3.5 7.5l5 4L12 5l3.5 6.5 5-4-.7 9.5Z", 1], ["M5 20.5h14", 0]]}, "key": {"label": "열쇠", "role": "star", "p": [["M8.2 3.1999999999999993C9.1 7.299999999999999 9.1 7.299999999999999 13.2 8.2C9.1 9.1 9.1 9.1 8.2 13.2C7.299999999999999 9.1 7.299999999999999 9.1 3.1999999999999993 8.2C7.299999999999999 7.299999999999999 7.299999999999999 7.299999999999999 8.2 3.1999999999999993Z", 1], ["M11.3 11.3 20 20M16.4 16.4l-2 2M18.6 18.6l-1.7 1.7", 0]]}, "potion": {"label": "물약", "role": "pink", "p": [["M10.3 3.5h3.4M10.8 3.5v4.4L6.3 13.6a5.4 5.4 0 0 0 4.4 7.9h2.6a5.4 5.4 0 0 0 4.4-7.9l-4.5-5.7V3.5", 0], ["M6.6 14.5h10.8a5.2 5.2 0 0 1-4.1 7h-2.6a5.2 5.2 0 0 1-4.1-7Z", 1], ["M17.5 4.2C17.824 5.676 17.824 5.676 19.3 6C17.824 6.324 17.824 6.324 17.5 7.8C17.176 6.324 17.176 6.324 15.7 6C17.176 5.676 17.176 5.676 17.5 4.2Z", 0]]}, "letter": {"label": "편지", "role": "wing", "p": [["M5 5.5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2Z", 1], ["M3.5 7 12 13.2 20.5 7", 0], ["M12 17.6s-2.4-1.4-2.4-3.1a1.2 1.2 0 0 1 2.4-.4 1.2 1.2 0 0 1 2.4.4c0 1.7-2.4 3.1-2.4 3.1Z", 0]]}, "cloud": {"label": "구름", "role": "lilac", "p": [["M7.2 18.5h10a4 4 0 0 0 .6-8 5.6 5.6 0 0 0-10.8 1.4 3.3 3.3 0 0 0 .2 6.6Z", 1]]}, "charm-circle": {"label": "마법진", "role": "lilac", "p": [["M12 3a9 9 0 1 1 0 18a9 9 0 1 1 0-18Z", 0], ["M12 6a6 6 0 1 1 0 12a6 6 0 1 1 0-12Z", 1], ["M12 7.8C12.756 11.244 12.756 11.244 16.2 12C12.756 12.756 12.756 12.756 12 16.2C11.244 12.756 11.244 12.756 7.8 12C11.244 11.244 11.244 11.244 12 7.8Z", 0]]}, "bell": {"label": "알림", "role": "star", "p": [["M6 16.5v-5a6 6 0 0 1 12 0v5l1.6 2H4.4Z", 1], ["M10 20.6a2 2 0 0 0 4 0M12 3.2v2.3", 0]]}, "home": {"label": "홈", "role": "pink", "p": [["M4 11 12 4l8 7v9.5H4Z", 1], ["M10 20.5v-3.8a2 2 0 0 1 4 0v3.8", 0], ["M12 8.799999999999999C12.324 10.276 12.324 10.276 13.8 10.6C12.324 10.924 12.324 10.924 12 12.4C11.676 10.924 11.676 10.924 10.2 10.6C11.676 10.276 11.676 10.276 12 8.799999999999999Z", 0]]}, "search": {"label": "검색", "role": "lilac", "p": [["M10.5 4a6.5 6.5 0 1 1 0 13a6.5 6.5 0 1 1 0-13Z", 1], ["M15.3 15.3 20.5 20.5", 0], ["M10.5 7.9C10.968 10.032 10.968 10.032 13.1 10.5C10.968 10.968 10.968 10.968 10.5 13.1C10.032 10.968 10.032 10.968 7.9 10.5C10.032 10.032 10.032 10.032 10.5 7.9Z", 0]]}, "user": {"label": "사용자", "role": "pink", "p": [["M12 4a4 4 0 1 1 0 8a4 4 0 1 1 0-8Z", 1], ["M4.5 20.5a7.5 7.5 0 0 1 15 0", 0]]}, "sliders": {"label": "설정", "role": "star", "p": [["M4 7h16M4 17h16", 0], ["M9 3.6C9.612 6.388 9.612 6.388 12.4 7C9.612 7.612 9.612 7.612 9 10.4C8.388 7.612 8.388 7.612 5.6 7C8.388 6.388 8.388 6.388 9 3.6Z", 1], ["M15 13.6C15.612 16.388 15.612 16.388 18.4 17C15.612 17.612 15.612 17.612 15 20.4C14.388 17.612 14.388 17.612 11.6 17C14.388 16.388 14.388 16.388 15 13.6Z", 1]]}, "check": {"label": "확인", "role": "none", "p": [["M5 12.5l4.5 4.5L19 7", 0]]}, "close": {"label": "닫기", "role": "none", "p": [["M6.5 6.5l11 11M17.5 6.5l-11 11", 0]]}, "plus": {"label": "추가", "role": "none", "p": [["M12 5v14M5 12h14", 0]]}, "chevron-right": {"label": "다음", "role": "none", "p": [["M9.5 5.5 16 12l-6.5 6.5", 0]]}, "menu": {"label": "메뉴", "role": "star", "p": [["M4 7h16M4 12h16M4 17h9.5", 0], ["M18 14.6C18.432 16.568 18.432 16.568 20.4 17C18.432 17.432 18.432 17.432 18 19.4C17.568 17.432 17.568 17.432 15.6 17C17.568 16.568 17.568 16.568 18 14.6Z", 1]]}};
+function I(name, size = 20, mono = false) {
+  const d = SC[name]; if (!d) return "";
+  const fill = mono || d.role === "none" ? "none" : `var(--icon-fill-${d.role})`;
+  return `<svg class="sc-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d.p.map(x => `<path d="${x[0]}" fill="${x[1] ? fill : "none"}"/>`).join("")}</svg>`;
+}
+const SPARK = '<svg class="spark tl" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12.9 11.1 12.9 11.1 21 12C12.9 12.9 12.9 12.9 12 21C11.1 12.9 11.1 12.9 3 12C11.1 11.1 11.1 11.1 12 3Z"/></svg><svg class="spark br" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3C12.9 11.1 12.9 11.1 21 12C12.9 12.9 12.9 12.9 12 21C11.1 12.9 11.1 12.9 3 12C11.1 11.1 11.1 11.1 12 3Z"/></svg>';
+const isEvening = () => new Date().getHours() >= (+S.settings.eveningHour || 18);
+const TAB_ICON = { today: () => isEvening() ? "moon" : "sun", projects: () => "wand", career: () => "gem", life: () => "home", stats: () => "charm-circle" };
+const TABS = [["today", "오늘"], ["projects", "프로젝트"], ["career", "커리어"], ["life", "생활"], ["stats", "기록"]];
+function renderTabs() {
+  document.getElementById("tabs").innerHTML = TABS.map(([k, l]) =>
+    `<button data-a="tab" data-k="${k}" class="${tab === k ? "on" : ""}"><span class="ico">${I(TAB_ICON[k](), 22, tab !== k)}</span>${l}</button>`).join("");
+}
+
+/* ===== 오늘 ===== */
+function nowStatus() {
+  const n = new Date(), wd = n.getDay(), h = n.getHours() + n.getMinutes() / 60;
+  if (wd === 0 || wd === 6) return { t: "주말 · 알바 있는 날", c: "warn" };
+  if (h < 9) return { t: "출근 전", c: "" };
+  if (h < 18) return { t: "근무 중 · 회사 일 먼저", c: "accent" };
+  return { t: "퇴근 후 · 글 쓰는 시간", c: "ok" };
+}
+function rToday() {
+  const k = VD(), isToday = k === TK(), vd = parseD(k), d = day(k), n = new Date(), st = nowStatus();
+  const weekend = vd.getDay() === 0 || vd.getDay() === 6;
+  const dl = dateItems();
+  const goal = +S.settings.writeGoal || 0, wt = writeTotal(k);
+  const writeProjects = S.projects.filter(p => p.type === "창작" && (p.status === "focus" || p.status === "next"));
+  const dueChores = S.chores.map(c => ({ c, s: choreState(c) })).filter(x => x.s.due <= 0).sort((a, b) => a.s.due - b.s.due);
+  const shift = S.shifts.find(s => s.date === k);
+  const evening = isToday && n.getHours() >= (+S.settings.eveningHour || 18);
+  const low = d.mood && (d.mood <= 2 || (evening && d.mood <= 3));
+  const moodBlock = `<section class="card ${evening ? "hero" : ""}">${evening ? SPARK : ""}
+    <h2>${I(evening ? "moon" : "heart")}${evening ? "저녁 체크인" : "오늘 기분"} ${evening ? `<span class="hint">${d.mood ? "기록했어요" : "지금 기분은?"}</span>` : ""}</h2>
+    <div class="moods">${[1, 2, 3, 4, 5].map(m => `<button data-a="mood" data-m="${m}" class="${d.mood === m ? "on" : ""}"><b class="num">${m}</b><span>${MOOD[m]}</span></button>`).join("")}</div>
+    <input type="text" data-c="note" value="${esc(d.note)}" placeholder="한 줄 메모 (선택)">
+    ${!weekend && evening ? `<label class="row" style="margin-top:10px;gap:10px"><input type="checkbox" class="check" data-c="drag" ${d.drag ? "checked" : ""}><span class="muted" style="color:var(--ink)">퇴근 후에도 회사 일·사람 생각을 곱씹었다</span></label>` : ""}
+  </section>`;
+  const careBlock = low ? `<section class="card care">
+    <h2>${I("cloud")}${evening ? "오늘 저녁은 이것만" : "오늘은 이것만"} <span class="hint">하나만 해도 돼요</span></h2>
+    ${S.routines.map(r => `<label class="item"><input type="checkbox" class="check" data-c="care" data-id="${r.id}" ${d.care.includes(r.id) ? "checked" : ""}><span>${esc(r.t)}</span></label>`).join("")}
+    ${lowStreak() >= 10 ? `<div class="muted" style="margin-top:8px">최근 2주 중 낮은 날이 ${lowStreak()}일이에요. 다니는 병원이나 상담 선생님께 이 기록을 보여 주는 것도 방법이에요.</div>` : ""}
+  </section>` : "";
+
+  return `
+  <header class="top">
+    <div><div class="brand spell">Sol Manager</div><h1>${vd.getMonth() + 1}월 ${vd.getDate()}일 ${WD[vd.getDay()]}요일</h1></div>
+    <div class="row">${isToday ? `<span class="chip ${st.c}">${st.t}</span>` : `<span class="chip lilac">지난 기록</span>`}<button class="btn ghost sm" data-a="tab" data-k="settings" aria-label="설정">${I("sliders", 20)}</button></div>
+  </header>
+  <div class="row" style="margin:-8px 0 14px">
+    <button class="btn sm" data-a="dPrev" aria-label="전날">‹ 전날</button>
+    <input type="date" data-c="dPick" value="${k}" max="${TK()}" class="grow" style="text-align:center">
+    ${isToday ? `<button class="btn sm" disabled aria-label="다음날">다음날 ›</button>` : `<button class="btn sm" data-a="dNext" aria-label="다음날">다음날 ›</button>`}
+  </div>
+  ${isToday ? "" : `<div class="banner row" style="justify-content:space-between"><span>${k.slice(5).replace("-", "/")} 기록을 보고 있어요. 고쳐도 그날 기록으로 저장돼요.</span><button class="btn sm primary" data-a="dToday">오늘로</button></div>`}
+  ${evening ? moodBlock + careBlock : ""}
+
+  ${dl.length ? `<div class="dstrip">${dl.map(it => { const dd = between(k, it.date), hot = it.kind === "마감" && dd <= 7;
+    return `<div class="dcard ${hot ? "hot" : ""}"><div class="muted" style="font-size:11px;line-height:14px">${it.kind}</div><div class="d num">${ddLabel(it.date)}</div><div class="t">${esc(it.p.title)}</div></div>`; }).join("")}</div>` : ""}
+
+  <section class="card t3 ${evening ? "" : "hero"}">${evening ? "" : SPARK}
+    <h2>${I("star")}${isToday ? "오늘의 3가지" : "그날의 3가지"} <button class="btn ghost sm" data-a="t3fill">${I("wand", 16, true)}불러오기</button></h2>
+    ${d.top3.map((x, i) => `<div class="row ${x.done ? "done" : ""}">
+      <input type="checkbox" class="check" data-c="t3done" data-i="${i}" ${x.done ? "checked" : ""} aria-label="완료">
+      <input type="text" class="grow" data-c="t3text" data-i="${i}" value="${esc(x.t)}" placeholder="${["가장 중요한 한 가지", "두 번째", "세 번째 (없어도 됨)"][i]}">
+    </div>`).join("")}
+  </section>
+
+  <div class="grid2" style="margin-bottom:12px">
+    <section class="card">
+      <h2>${I("letter")}글쓰기</h2>
+      <div class="big num">${wt.toLocaleString()}<span class="muted" style="font-size:13px"> / ${goal.toLocaleString()}자</span></div>
+      <div class="bar ${goal && wt >= goal ? "ok" : ""}"><i style="width:${goal ? Math.min(100, wt / goal * 100) : 0}%"></i></div>
+      <div class="muted">${goal && wt >= goal ? "오늘 목표 달성" : !isToday ? "그날 쓴 분량" : weekend ? "주말 · 쓸 수 있는 만큼" : st.c === "ok" ? "지금이 쓰는 시간" : "퇴근 후에 채우기"}</div>
+    </section>
+    <section class="card">
+      <h2>${I("wing")}운동</h2>
+      <button class="toggle ${d.ex.done ? "on" : ""}" data-a="exToggle">${d.ex.done ? I("sparkle", 18) + "했어요" : "아직"}</button>
+      <div class="row" style="margin-top:8px"><input type="number" inputmode="numeric" data-c="exMin" value="${esc(d.ex.min)}" placeholder="분"><span class="muted">분</span></div>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>${I("plus")}글 기록 추가</h2>
+    <div class="row wrap">
+      <select id="wP" class="grow" style="flex-basis:160px">${writeProjects.map(p => `<option value="${p.id}">${esc(p.title)}</option>`).join("")}<option value="">기타</option></select>
+      <input id="wC" type="number" inputmode="numeric" placeholder="글자 수" style="width:110px">
+      <button class="btn primary" data-a="wAdd">추가</button>
+    </div>
+    ${d.write.length ? `<div class="list" style="margin-top:8px">${d.write.map((w, i) => {
+      const p = S.projects.find(p => p.id === w.pid);
+      return `<div class="li"><span class="grow">${esc(p ? p.title : "기타")}</span><span class="num">${(+w.chars).toLocaleString()}자</span><button class="btn ghost sm" data-a="wDel" data-i="${i}" aria-label="삭제">✕</button></div>`; }).join("")}</div>` : ""}
+  </section>
+
+  ${isToday ? pipeCards() : ""}
+
+  ${evening ? "" : moodBlock + careBlock}
+
+  ${weekend && isToday ? `<section class="card">
+    <h2>${I("sun")}알바 <span class="hint">${shift && shift.in ? `${shift.in} 출근${shift.out ? ` · ${shift.out} 퇴근 · ${hm(shiftMin(shift))}` : ""}` : "오늘 출근 전"}</span></h2>
+    <div class="row">
+      <button class="btn grow ${shift && shift.in ? "" : "primary"}" data-a="shiftIn">${shift && shift.in ? "출근 시간 다시 찍기" : "출근"}</button>
+      <button class="btn grow ${shift && shift.in && !shift.out ? "primary" : ""}" data-a="shiftOut" ${shift && shift.in ? "" : "disabled"}>퇴근</button>
+    </div>
+  </section>` : ""}
+
+  ${isToday ? `<section class="card">
+    <h2>${I("home")}생활 <span class="hint">${dueChores.length ? `챙길 것 ${dueChores.length}개` : "밀린 것 없음"}</span></h2>
+    ${dueChores.length ? `<div class="list">${dueChores.slice(0, 4).map(({ c, s }) => `<div class="li"><span class="grow">${esc(c.t)}</span><span class="chip ${s.cls}">${s.label}</span><button class="btn sm" data-a="chore" data-id="${c.id}">했음</button></div>`).join("")}</div>`
+      : `<div class="empty-note">집안일 다 챙겼어요.</div>`}
+  </section>` : ""}
+
+  <section class="card">
+    <h2>${I("cloud")}아이디어 냉동실 <span class="hint">새 기획은 일단 여기에</span></h2>
+    <div class="row"><input type="text" id="ideaIn" class="grow" placeholder="떠오른 거 한 줄"><button class="btn" data-a="ideaAdd">넣기</button></div>
+    ${S.ideas.length ? `<div class="muted" style="margin-top:6px">보관 중 ${S.ideas.length}개 · 프로젝트 탭에서 확인</div>` : ""}
+  </section>`;
+}
+function lowStreak() {
+  let c = 0; for (let i = 0; i < 14; i++) { const d = peek(addDays(TK(), -i)); if (d && d.mood && d.mood <= 2) c++; } return c;
+}
+
+/* ===== 프로젝트 ===== */
+function rProjects() {
+  const focus = S.projects.filter(p => p.status === "focus").length;
+  const groups = ["focus", "next", "wait", "hold", "done"];
+  return `
+  <header class="top"><div><div class="brand spell">Sol Manager</div><h1>프로젝트</h1></div>
+    <button class="btn primary sm" data-a="pNewToggle">${I("plus", 16, true)}새 프로젝트</button></header>
+  ${focus > 2 ? `<div class="banner">집중 중인 프로젝트가 ${focus}개예요. 2개 이하로 줄이면 하나라도 끝까지 갑니다.</div>` : ""}
+  <section class="card" id="pNew" hidden>
+    <h2>${I("wand")}새 프로젝트</h2>
+    <input type="text" id="npT" placeholder="이름">
+    <div class="row" style="margin-top:8px">
+      <select id="npType">${TYPES.map(t => `<option>${t}</option>`).join("")}</select>
+      <select id="npS">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === "next" ? "selected" : ""}>${v}</option>`).join("")}</select>
+    </div>
+    <label class="row" style="gap:10px;margin-top:10px"><input type="checkbox" class="check" id="npC">공모전이에요</label>
+    <div class="row" style="margin-top:8px"><div class="grow"><span class="muted">마감일</span><input type="date" id="npD"></div><div class="grow"><span class="muted">발표일 (공모전)</span><input type="date" id="npA"></div></div>
+    <input type="text" id="npG" placeholder="목표 한 줄" style="margin-top:8px">
+    <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" data-a="pAdd">만들기</button></div>
+  </section>
+  ${groups.map(g => { const ps = S.projects.filter(p => p.status === g); if (!ps.length) return "";
+    return `<div class="group-h"><span>${STATUS[g]}</span><span class="num">${ps.length}</span></div>${ps.map(pCard).join("")}`; }).join("")}
+
+  <div class="group-h"><span>아이디어 냉동실</span><span class="num">${S.ideas.length}</span></div>
+  <section class="card">
+    <div class="row"><input type="text" id="ideaIn" class="grow" placeholder="떠오른 거 한 줄"><button class="btn" data-a="ideaAdd">넣기</button></div>
+    ${S.ideas.length ? `<div class="list" style="margin-top:8px">${S.ideas.map(i => `<div class="li"><div class="grow">${esc(i.t)}<div class="muted num">${i.date}</div></div>
+      <button class="btn sm" data-a="ideaPromote" data-id="${i.id}">꺼내기</button><button class="btn ghost sm" data-a="ideaDel" data-id="${i.id}" aria-label="삭제">✕</button></div>`).join("")}</div>`
+      : `<div class="empty-note">지금 하던 걸 끝낼 때까지 새 기획은 얼려 두기.</div>`}
+  </section>`;
+}
+function pCard(p) {
+  const done = p.steps.filter(s => s.done).length, tot = p.steps.length, open = openP === p.id;
+  const next = p.steps.find(s => !s.done);
+  return `<section class="card proj" data-a="pOpen" data-id="${p.id}">
+    <div class="row"><div class="grow ttl">${esc(p.title)}</div>${p.contest ? contestChip(p) : p.deadline ? `<span class="chip ${between(TK(), p.deadline) <= 7 && p.status !== "done" ? "bad" : ""} num">${ddLabel(p.deadline)}</span>` : ""}</div>
+    ${p.goal ? `<div class="muted" style="margin-top:2px">${esc(p.goal)}</div>` : ""}
+    <div class="meta"><span class="tag">${esc(p.type)}</span>${p.contest ? `<span class="tag">공모전</span>` : ""}${p.contest && p.submittedAt ? `<span class="muted num">${p.submittedAt.slice(5).replace("-", "/")} 제출</span>` : ""}${tot ? `<span class="muted num">${done}/${tot}</span>` : ""}${next && !open ? `<span class="muted">· 다음: ${esc(next.t)}</span>` : ""}</div>
+    ${tot ? `<div class="bar"><i style="width:${done / tot * 100}%"></i></div>` : ""}
+    ${open ? `<div class="pbody" data-stop>
+      <div class="list">${p.steps.map(s => `<div class="li"><input type="checkbox" class="check" data-c="step" data-p="${p.id}" data-id="${s.id}" ${s.done ? "checked" : ""}>
+        <span class="grow" style="${s.done ? "text-decoration:line-through;color:var(--ink-3)" : ""}">${esc(s.t)}</span>
+        <button class="btn ghost sm" data-a="stepDel" data-p="${p.id}" data-id="${s.id}" aria-label="삭제">✕</button></div>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><input type="text" id="st_${p.id}" class="grow" placeholder="단계 추가"><button class="btn sm" data-a="stepAdd" data-p="${p.id}">추가</button></div>
+      <label>이름</label><input type="text" data-c="pf" data-f="title" data-p="${p.id}" value="${esc(p.title)}">
+      <div class="row"><div class="grow"><label>상태</label><select data-c="pf" data-f="status" data-p="${p.id}">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${p.status === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>
+        <div class="grow"><label>분류</label><select data-c="pf" data-f="type" data-p="${p.id}">${TYPES.map(t => `<option ${p.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></div></div>
+      <label class="row" style="gap:10px;margin-top:12px;color:var(--ink)"><input type="checkbox" class="check" data-c="pContest" data-p="${p.id}" ${p.contest ? "checked" : ""}>공모전이에요</label>
+      ${p.contest ? `<label>공모 단계</label>
+        <div class="seg">${CSTAGE.map(([v, l]) => `<button data-a="cStage" data-p="${p.id}" data-v="${v}" class="${p.cstage === v ? "on" : ""}">${l}</button>`).join("")}</div>
+        <div class="row"><div class="grow"><label>마감일</label><input type="date" data-c="pf" data-f="deadline" data-p="${p.id}" value="${esc(p.deadline)}"></div>
+          <div class="grow"><label>발표일</label><input type="date" data-c="pf" data-f="announce" data-p="${p.id}" value="${esc(p.announce)}"></div></div>
+        ${p.cstage !== "prep" ? `<label>제출일</label><input type="date" data-c="pf" data-f="submittedAt" data-p="${p.id}" value="${esc(p.submittedAt || "")}">` : ""}`
+      : `<label>마감</label><input type="date" data-c="pf" data-f="deadline" data-p="${p.id}" value="${esc(p.deadline)}">`}
+      <label>목표</label><input type="text" data-c="pf" data-f="goal" data-p="${p.id}" value="${esc(p.goal)}">
+      <label>메모</label><textarea data-c="pf" data-f="note" data-p="${p.id}">${esc(p.note)}</textarea>
+      <div class="row" style="margin-top:10px;justify-content:space-between"><button class="btn ghost sm danger" data-a="pDel" data-id="${p.id}">삭제</button><button class="btn sm" data-a="pOpen" data-id="${p.id}">접기</button></div>
+    </div>` : ""}
+  </section>`;
+}
+
+/* ===== 커리어 파이프 ===== */
+const ymOf = k => k.slice(0, 7);
+function lastDayOfMonth(ym) { const [y, m] = ym.split("-").map(Number); return new Date(y, m, 0).getDate(); }
+function prevYm(ym) { const [y, m] = ym.split("-").map(Number); const d = new Date(y, m - 2, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; }
+function monthDue() { // 말일 3일 전부터 이번 달, 1~5일엔 지난달
+  const k = TK(), ym = ymOf(k), dd = +k.slice(8);
+  if (dd >= lastDayOfMonth(ym) - 2 && S.career.monthly[ym] == null) return ym;
+  if (dd <= 5 && S.career.monthly[prevYm(ym)] == null) return prevYm(ym);
+  return null;
+}
+const weekLogs = () => { const wk = weekDays(TK()); return S.career.logs.filter(l => wk.includes(l.date)); };
+const skillName = id => (S.career.skills.find(s => s.id === id) || {}).t || "기타";
+const skillOptions = () => S.career.skills.filter(s => !s.done).map(s => `<option value="${s.id}">${esc(s.t)}</option>`).join("") + `<option value="">기타</option>`;
+function logForm(ph) {
+  return `<div class="row wrap"><input type="text" id="clT" class="grow" style="flex-basis:100%" placeholder="${ph}">
+    <select id="clS" class="grow">${skillOptions()}</select><button class="btn primary" data-a="clAdd">기록</button></div>`;
+}
+function pipeCards() {
+  const wd = new Date().getDay(), out = [];
+  const due = monthDue();
+  if (due) out.push(`<section class="card" style="border-color:var(--gold-500)">
+    <h2>${I("gem")}${+due.slice(5)}월 파이프 점검</h2>
+    <p style="margin:0 0 10px">내일 이직 면접을 본다면, ${+due.slice(5)}월에 한 일로 말할 거리가 있나요?</p>
+    <input type="text" id="mT" placeholder="있다면 한 줄로 (회사 밖 언어로)">
+    <div class="row" style="margin-top:10px"><button class="btn primary grow" data-a="month" data-v="1" data-ym="${due}">있다</button><button class="btn grow" data-a="month" data-v="0" data-ym="${due}">없다</button></div>
+  </section>`);
+  if ([4, 5, 6, 0].includes(wd) && !weekLogs().length) out.push(`<section class="card">
+    <h2>${I("gem")}이번 주 쌓인 것 <span class="hint">회사 밖에서도 통하는 것 하나</span></h2>
+    ${logForm("예: 수강신청 테이블 인덱스 설계로 조회 속도 개선")}
+  </section>`);
+  return out.join("");
+}
+function rCareer() {
+  const C = S.career, k = TK(), ym = ymOf(k);
+  const months = Array.from({ length: 6 }, (_, i) => { let m = ym; for (let j = 0; j < 5 - i; j++) m = prevYm(m); return m; });
+  const monthLogs = C.logs.filter(l => ymOf(l.date) === ym).length;
+  const starred = C.logs.filter(l => l.star);
+  const groups = {}; starred.forEach(l => (groups[l.skill || ""] = groups[l.skill || ""] || []).push(l));
+  const logs = [...C.logs].sort((a, b) => b.date.localeCompare(a.date));
+  return `
+  <header class="top"><div><div class="brand spell">Career Pipe</div><h1>커리어 파이프</h1></div><span class="chip">이번 달 ${monthLogs}개</span></header>
+
+  <section class="card">
+    <h2>${I("gem")}파이프 점검 <span class="hint">면접에서 말할 거리가 있었나</span></h2>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;text-align:center">
+      ${months.map(m => { const r = C.monthly[m]; const st = r == null ? (m === ym ? "진행 중" : "–") : r.ok ? "있음" : "없음";
+        return `<div><div class="chip ${r == null ? "" : r.ok ? "ok" : "bad"}" style="justify-content:center;width:100%;padding:4px 0">${r && r.ok ? I("check", 14, true) : r ? I("close", 14, true) : "&nbsp;"}</div>
+          <div class="muted" style="margin-top:4px">${+m.slice(5)}월</div><div class="muted" style="font-size:11px;line-height:14px">${st}</div></div>`; }).join("")}
+    </div>
+    ${months.map(m => C.monthly[m]).filter(r => r && r.t).length ? `<div class="list" style="margin-top:10px">${months.filter(m => C.monthly[m] && C.monthly[m].t).reverse().map(m => `<div class="li"><span class="tag">${+m.slice(5)}월</span><span class="grow">${esc(C.monthly[m].t)}</span></div>`).join("")}</div>` : ""}
+    <p class="muted" style="margin:10px 0 0">매달 말일 3일 전부터 오늘 탭에 점검 카드가 떠요.</p>
+  </section>
+
+  <section class="card">
+    <h2>${I("plus")}성과 기록 <span class="hint">주 1개면 충분해요</span></h2>
+    ${logForm("회사 이름 없이도 통하는 문장으로")}
+    ${logs.length ? `<div class="list" style="margin-top:10px">${logs.map(l => `<div class="li">
+      <button class="btn ghost sm" data-a="clStar" data-id="${l.id}" aria-label="이력서용 표시" style="padding:4px">${I("star", 20, !l.star)}</button>
+      <div class="grow">${esc(l.t)}<div class="muted">${l.date.slice(5).replace("-", "/")} · ${esc(skillName(l.skill))}</div></div>
+      <button class="btn ghost sm" data-a="clDel" data-id="${l.id}" aria-label="삭제">✕</button></div>`).join("")}</div>`
+      : `<div class="empty-note" style="margin-top:8px">아직 기록이 없어요. "무엇을 / 어떤 기술로 / 결과가 어땠는지" 순서로 적으면 그대로 이력서 문장이 돼요.</div>`}
+  </section>
+
+  <section class="card">
+    <h2>${I("star")}통용 기술 <span class="hint">6개월 단위로 2~3개</span></h2>
+    <div class="list">${C.skills.map(sk => { const n = C.logs.filter(l => l.skill === sk.id).length;
+      return `<div class="li" style="align-items:flex-start"><input type="checkbox" class="check" data-c="skDone" data-id="${sk.id}" ${sk.done ? "checked" : ""} style="margin-top:2px">
+        <div class="grow"><div style="${sk.done ? "text-decoration:line-through;color:var(--ink-muted)" : ""}">${esc(sk.t)}</div>
+          <div class="muted">${sk.why ? esc(sk.why) + " · " : ""}기록 ${n}개${sk.until ? ` · ${ddLabel(sk.until)}` : ""}</div></div>
+        <button class="btn ghost sm" data-a="skDel" data-id="${sk.id}" aria-label="삭제">✕</button></div>`; }).join("")}</div>
+    <details style="margin-top:10px"><summary>기술 추가</summary>
+      <input type="text" id="skT" placeholder="기술 이름" style="margin-top:8px">
+      <input type="text" id="skW" placeholder="왜 필요한지 한 줄" style="margin-top:8px">
+      <div class="row" style="margin-top:8px"><input type="date" id="skU" value="${addDays(k, 182)}"><button class="btn sm" data-a="skAdd">추가</button></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>${I("letter")}이력서 재료 <span class="hint">별 표시한 기록만</span></h2>
+    ${starred.length ? `${Object.entries(groups).map(([sid, ls]) => `<div style="margin-bottom:10px"><div class="tag" style="display:inline-block;margin-bottom:4px">${esc(skillName(sid))}</div>
+      <ul style="margin:0;padding-left:18px">${ls.map(l => `<li>${esc(l.t)}</li>`).join("")}</ul></div>`).join("")}
+      <button class="btn sm" data-a="copyResume">${I("check", 16, true)}텍스트로 복사</button>`
+      : `<div class="empty-note">성과 기록에서 별을 누르면 여기 모여요.</div>`}
+  </section>`;
+}
+
+/* ===== 생활 ===== */
+/* ===== 가계부 ===== */
+let lifeView = "home", moneyYm = null, moneyKind = "out";
+const CATS = ["식비", "배달·외식", "생활용품", "교통", "문화·취미", "의료", "기타"];
+const won = n => `${(Math.round(n) || 0).toLocaleString()}원`;
+const lifeSeg = () => `<div class="seg" style="margin-bottom:14px">${[["home", "집안일·알바"], ["money", "가계부"]].map(([v, l]) => `<button data-a="lifeView" data-v="${v}" class="${lifeView === v ? "on" : ""}">${l}</button>`).join("")}</div>`;
+function monthEntries(ym) {
+  const M = S.money, last = lastDayOfMonth(ym);
+  const fixed = M.fixed.filter(f => (f.since || "0000-00") <= ym && (!f.until || f.until >= ym)).map(f => ({
+    id: "f_" + f.id, date: `${ym}-${pad(Math.min(+f.day || 1, last))}`, t: f.t, amt: +f.amt || 0, kind: f.kind,
+    cat: f.kind === "in" ? "수입" : (f.cat || "고정비"), fixed: true }));
+  const tx = M.tx.filter(t => ymOf(t.date) === ym);
+  const wage = +S.settings.wage || 0;
+  const alba = wage ? S.shifts.filter(x => ymOf(x.date) === ym).reduce((a, x) => a + shiftMin(x), 0) / 60 * wage : 0;
+  const albaE = alba ? [{ id: "alba", date: `${ym}-${pad(last)}`, t: "알바 (근무 기록 기준 예상)", amt: Math.round(alba), kind: "in", cat: "수입", auto: true }] : [];
+  return [...fixed, ...tx, ...albaE].sort((a, b) => b.date.localeCompare(a.date));
+}
+function rMoney() {
+  const ym = moneyYm || ymOf(TK()), es = monthEntries(ym), today = TK();
+  const inc = es.filter(e => e.kind === "in").reduce((a, e) => a + e.amt, 0);
+  const out = es.filter(e => e.kind === "out").reduce((a, e) => a + e.amt, 0);
+  const fixedOut = es.filter(e => e.kind === "out" && e.fixed).reduce((a, e) => a + e.amt, 0);
+  const byCat = {}; es.filter(e => e.kind === "out").forEach(e => byCat[e.cat] = (byCat[e.cat] || 0) + e.amt);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), maxC = cats.length ? cats[0][1] : 1;
+  const left = inc - out;
+  return `
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <button class="btn sm" data-a="mPrev">‹</button><b style="font:700 18px var(--font-display)">${ym.slice(0, 4)}년 ${+ym.slice(5)}월</b>
+    <button class="btn sm" data-a="mNext" ${ym >= ymOf(today) ? "disabled" : ""}>›</button>
+  </div>
+  <section class="card stats4">
+    <div class="stat"><span class="k">수입</span><span class="v num amt-in">${won(inc)}</span></div>
+    <div class="stat"><span class="k">지출</span><span class="v num">${won(out)}</span></div>
+    <div class="stat"><span class="k">남은 돈</span><span class="v num" style="color:${left < 0 ? "var(--danger)" : "var(--ink)"}">${won(left)}</span></div>
+    <div class="stat"><span class="k">그중 고정비</span><span class="v num">${won(fixedOut)}</span></div>
+  </section>
+
+  <section class="card">
+    <h2>${I("plus")}기록 <span class="hint">고정비는 자동으로 들어가요</span></h2>
+    <div class="seg" style="margin-bottom:10px">${[["out", "지출"], ["in", "수입"]].map(([v, l]) => `<button data-a="mKind" data-v="${v}" class="${moneyKind === v ? "on" : ""}">${l}</button>`).join("")}</div>
+    <div class="row"><input type="number" inputmode="numeric" id="mAmt" placeholder="금액" class="grow">
+      ${moneyKind === "out" ? `<select id="mCat" style="width:130px">${CATS.map(c => `<option>${c}</option>`).join("")}</select>` : ""}</div>
+    <div class="row" style="margin-top:8px"><input type="text" id="mT" class="grow" placeholder="${moneyKind === "out" ? "어디에 (선택)" : "무슨 수입 (예: 크몽 외주)"}">
+      <input type="date" id="mD" value="${ym === ymOf(today) ? today : ym + "-01"}" style="width:150px"></div>
+    <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" data-a="mAdd">기록</button></div>
+  </section>
+
+  ${cats.length ? `<section class="card">
+    <h2>${I("gem")}어디에 썼나</h2>
+    ${cats.map(([c, v]) => `<div style="margin-bottom:8px"><div class="row"><span class="grow">${esc(c)}</span><span class="num">${won(v)}</span></div>
+      <div class="bar" style="margin:4px 0 0"><i style="width:${v / maxC * 100}%"></i></div></div>`).join("")}
+  </section>` : ""}
+
+  <section class="card">
+    <h2>${I("letter")}내역 <span class="hint">${es.length}건</span></h2>
+    ${es.length ? `<div class="list">${es.map(e => `<div class="li">
+      <span class="num muted" style="width:44px">${e.date.slice(5).replace("-", "/")}</span>
+      <div class="grow">${esc(e.t || e.cat)}<div class="muted">${esc(e.cat)}${e.fixed ? " · 고정" : ""}${e.auto ? " · 자동" : ""}${e.date > today ? " · 예정" : ""}</div></div>
+      <span class="num ${e.kind === "in" ? "amt-in" : "amt-out"}">${e.kind === "in" ? "+" : "−"}${won(e.amt)}</span>
+      ${e.fixed || e.auto ? `<span style="width:30px"></span>` : `<button class="btn ghost sm" data-a="mDel" data-id="${e.id}" aria-label="삭제">✕</button>`}</div>`).join("")}</div>`
+      : `<div class="empty-note">이번 달 기록이 없어요. 고정비부터 등록해 두면 매달 알아서 채워져요.</div>`}
+  </section>
+
+  <section class="card">
+    <h2>${I("key")}고정비·고정 수입 <span class="hint">한 번 등록하면 매달 자동</span></h2>
+    ${S.money.fixed.filter(f => !f.until).length ? `<div class="list">${S.money.fixed.filter(f => !f.until).map(f => `<div class="li">
+      <div class="grow">${esc(f.t)}<div class="muted">매달 ${f.day}일 · ${f.kind === "in" ? "수입" : esc(f.cat || "고정비")}</div></div>
+      <span class="num ${f.kind === "in" ? "amt-in" : ""}">${f.kind === "in" ? "+" : "−"}${won(f.amt)}</span>
+      <button class="btn ghost sm" data-a="fxDel" data-id="${f.id}" aria-label="해지">✕</button></div>`).join("")}</div>` : `<div class="empty-note">월세·관리비·통신비·구독료, 그리고 월급을 등록해 두세요.</div>`}
+    <details style="margin-top:10px" ${!S.money.fixed.length || window.__fxOpen ? "open" : ""}><summary>추가</summary>
+      <div class="seg" style="margin-top:8px">${[["out", "지출"], ["in", "수입"]].map(([v, l]) => `<button data-a="fxKind" data-v="${v}" class="${(window.__fxKind || "out") === v ? "on" : ""}">${l}</button>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><input type="text" id="fxT" class="grow" placeholder="${(window.__fxKind || "out") === "in" ? "예: 월급" : "예: 월세"}"><input type="number" inputmode="numeric" id="fxA" placeholder="금액" style="width:120px"></div>
+      <div class="row" style="margin-top:8px"><span class="muted">매달</span><input type="number" id="fxD" min="1" max="31" value="${(window.__fxKind || "out") === "in" ? 10 : 25}" style="width:70px"><span class="muted">일</span>
+        <button class="btn sm" data-a="fxAdd" style="margin-left:auto">등록</button></div>
+    </details>
+  </section>`;
+}
+
+function rLife() {
+  if (lifeView === "money") return `<header class="top"><div><div class="brand spell">Sol Manager</div><h1>생활</h1></div></header>${lifeSeg()}${rMoney()}`;
+  const ym = TK().slice(0, 7);
+  const month = S.shifts.filter(s => s.date.startsWith(ym)).sort((a, b) => b.date.localeCompare(a.date));
+  const mins = month.reduce((a, s) => a + shiftMin(s), 0), wage = +S.settings.wage || 0;
+  const chores = S.chores.map(c => ({ c, s: choreState(c) })).sort((a, b) => a.s.due - b.s.due);
+  return `
+  <header class="top"><div><div class="brand spell">Sol Manager</div><h1>생활</h1></div></header>
+  ${lifeSeg()}
+  <section class="card">
+    <h2>${I("home")}집안일 <span class="hint">주기마다 알아서 올라와요</span></h2>
+    <div class="list">${chores.map(({ c, s }) => `<div class="li">
+      <div class="grow">${esc(c.t)}<div class="muted">${c.every}일마다${c.last ? ` · 마지막 ${c.last.slice(5).replace("-", "/")}` : ""}</div></div>
+      <span class="chip ${s.cls}">${s.label}</span><button class="btn sm" data-a="chore" data-id="${c.id}">했음</button></div>`).join("")}</div>
+    <details style="margin-top:10px"><summary>집안일 편집</summary>
+      <div class="list" style="margin-top:8px">${S.chores.map(c => `<div class="li"><input type="text" class="grow" data-c="choreT" data-id="${c.id}" value="${esc(c.t)}">
+        <input type="number" inputmode="numeric" data-c="choreE" data-id="${c.id}" value="${c.every}" style="width:64px"><span class="muted">일</span>
+        <button class="btn ghost sm" data-a="choreDel" data-id="${c.id}" aria-label="삭제">✕</button></div>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><input type="text" id="ncT" class="grow" placeholder="새 집안일"><input type="number" id="ncE" value="7" style="width:64px"><span class="muted">일</span><button class="btn sm" data-a="choreAdd">추가</button></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>${I("sun")}알바 <span class="hint num">${ym.replace("-", ".")} · ${hm(mins)}${wage ? ` · 약 ${Math.round(mins / 60 * wage).toLocaleString()}원` : ""}</span></h2>
+    ${month.length ? `<div class="list">${month.map(s => `<div class="li"><span class="num" style="width:70px">${s.date.slice(5).replace("-", "/")} ${WD[parseD(s.date).getDay()]}</span>
+      <span class="grow num">${s.in || "--:--"} – ${s.out || "--:--"}</span><span class="muted num">${shiftMin(s) ? hm(shiftMin(s)) : ""}</span>
+      <button class="btn ghost sm" data-a="shiftDel" data-id="${s.id}" aria-label="삭제">✕</button></div>`).join("")}</div>`
+      : `<div class="empty-note">이번 달 기록 없음. 주말에 오늘 탭에서 출근·퇴근만 누르면 돼요.</div>`}
+    <details style="margin-top:10px"><summary>직접 입력</summary>
+      <div class="row wrap" style="margin-top:8px"><input type="date" id="nsD" value="${TK()}" style="flex:1 1 140px"><input type="time" id="nsI" value="10:00" style="flex:1 1 90px"><input type="time" id="nsO" value="18:00" style="flex:1 1 90px"><button class="btn sm" data-a="shiftAdd">추가</button></div>
+    </details>
+  </section>`;
+}
+
+/* ===== 기록 ===== */
+function bars(vals, max, opt = {}) {
+  const n = vals.length, W = 300, H = 92, top = 6, bh = 66, gap = 4, bw = (W - gap * (n - 1)) / n;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${opt.label || ""}">`;
+  if (opt.goal && max) { const y = top + bh - opt.goal / max * bh; s += `<line class="gl" x1="0" x2="${W}" y1="${y}" y2="${y}"/>`; }
+  vals.forEach((v, i) => {
+    const x = i * (bw + gap);
+    if (v == null || v === 0) s += `<rect class="empty" x="${x}" y="${top + bh - 2}" width="${bw}" height="2" rx="1"/>`;
+    else { const h = Math.max(3, v / max * bh); s += `<rect class="b ${opt.cls ? opt.cls(v) : ""}" x="${x}" y="${top + bh - h}" width="${bw}" height="${h}" rx="2"><title>${opt.fmt ? opt.fmt(v, i) : v}</title></rect>`; }
+    if (opt.labels && (i % 2 === (n - 1) % 2)) s += `<text class="lbl" x="${x + bw / 2}" y="${H - 4}" text-anchor="middle">${opt.labels[i]}</text>`;
+  });
+  return s + "</svg>";
+}
+function rStats() {
+  const days = Array.from({ length: 14 }, (_, i) => addDays(TK(), i - 13));
+  const labels = days.map(d => String(+d.slice(8)));
+  const moods = days.map(k => peek(k)?.mood || null);
+  const writes = days.map(writeTotal);
+  const goal = +S.settings.writeGoal || 0;
+  const wk = weekDays(TK());
+  const wWrite = wk.reduce((a, k) => a + writeTotal(k), 0);
+  const wEx = wk.filter(k => peek(k)?.ex?.done).length;
+  const wm = wk.map(k => peek(k)?.mood).filter(Boolean);
+  const wAlba = S.shifts.filter(s => wk.includes(s.date)).reduce((a, s) => a + shiftMin(s), 0);
+  const wkey = isoWeek(new Date()), rv = S.reviews[wkey] || { good: "", stuck: "", next: "" };
+  const past = Object.keys(S.reviews).filter(k => k !== wkey).sort().reverse();
+  const d28 = Array.from({ length: 28 }, (_, i) => addDays(TK(), -i)).map(peek).filter(Boolean);
+  const dragDays = d28.filter(d => d.drag), calm = d28.filter(d => !d.drag && d.mood);
+  const avg = a => a.length ? (a.reduce((x, y) => x + y, 0) / a.length).toFixed(1) : "–";
+  return `
+  <header class="top"><div><div class="brand spell">Sol Manager</div><h1>기록</h1></div><span class="chip">이번 주 ${wk[0].slice(5).replace("-", "/")}–${wk[6].slice(5).replace("-", "/")}</span></header>
+  <section class="card stats4">
+    <div class="stat"><span class="k">글</span><span class="v num">${wWrite.toLocaleString()}자</span></div>
+    <div class="stat"><span class="k">운동</span><span class="v num">${wEx}/7일</span></div>
+    <div class="stat"><span class="k">기분 평균</span><span class="v num">${wm.length ? (wm.reduce((a, b) => a + b, 0) / wm.length).toFixed(1) : "–"}</span></div>
+    <div class="stat"><span class="k">알바</span><span class="v num">${hm(wAlba)}</span></div>
+  </section>
+  <section class="card"><h2>${I("heart")}기분 · 14일 <span class="hint">라일락 = 낮은 날</span></h2>
+    ${bars(moods, 5, { labels, label: "기분 추이", cls: v => v <= 2 ? "low" : "", fmt: (v, i) => `${days[i]} · ${v} ${MOOD[v]}` })}</section>
+  <section class="card"><h2>${I("letter")}글자 수 · 14일 <span class="hint">별 = 목표 달성</span></h2>
+    ${bars(writes, Math.max(goal, ...writes, 1), { labels, goal, label: "글자 수 추이", cls: v => goal && v >= goal ? "ok" : "", fmt: (v, i) => `${days[i]} · ${v.toLocaleString()}자` })}</section>
+  <section class="card">
+    <h2>${I("letter")}날짜별 기록 <span class="hint">눌러서 그날 보기</span></h2>
+    <div class="list">${[...days].reverse().map(k2 => { const d2 = peek(k2), w2 = writeTotal(k2); const has = d2 && (d2.mood || w2 || d2.ex?.done || d2.note || d2.top3?.some(x => x.t));
+      return `<div class="li" data-a="openDay" data-d="${k2}" style="cursor:pointer">
+        <span class="num" style="width:62px">${k2.slice(5).replace("-", "/")} ${WD[parseD(k2).getDay()]}</span>
+        <span class="grow muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${has ? [d2.mood ? `기분 ${d2.mood}` : "", w2 ? `${w2.toLocaleString()}자` : "", d2.ex?.done ? "운동" : "", d2.note ? esc(d2.note) : ""].filter(Boolean).join(" · ") || "할 일만 있음" : "기록 없음"}</span>
+        ${I("chevron-right", 16, true)}</div>`; }).join("")}</div>
+  </section>
+  <section class="card">
+    <h2>${I("cloud")}퇴근 후 회사 생각 <span class="hint">최근 4주</span></h2>
+    <div class="stats4">
+      <div class="stat"><span class="k">곱씹은 날</span><span class="v num">${dragDays.length}일</span></div>
+      <div class="stat"><span class="k">그날 기분 / 아닌 날</span><span class="v num">${avg(dragDays.map(d => d.mood).filter(Boolean))} / ${avg(calm.map(d => d.mood))}</span></div>
+    </div>
+    <p class="muted" style="margin:10px 0 0">저녁 체크인에서 체크한 날만 세요. 두 숫자 차이가 크면 회사에 쓰는 에너지가 저녁 기분까지 끌어내리고 있다는 뜻이에요.</p>
+  </section>
+  <section class="card">
+    <h2>${I("crown")}주간 회고 <span class="hint">일요일 밤 5분</span></h2>
+    <label class="muted">잘 된 것</label><textarea data-c="rv" data-f="good">${esc(rv.good)}</textarea>
+    <label class="muted">막힌 것</label><textarea data-c="rv" data-f="stuck">${esc(rv.stuck)}</textarea>
+    <label class="muted">다음 주 딱 3개</label><textarea data-c="rv" data-f="next">${esc(rv.next)}</textarea>
+    <label class="muted" style="display:block;margin-top:10px">이번 주 회사에 쓴 에너지 중 옮겨 갈 자산이 된 비율</label>
+    <div class="seg" style="margin-top:6px">${[0, 25, 50, 75, 100].map(v => `<button data-a="rvPipe" data-v="${v}" class="${rv.pipe === v ? "on" : ""}">${v}%</button>`).join("")}</div>
+    ${past.length ? `<details style="margin-top:10px"><summary>지난 회고 ${past.length}개</summary>${past.map(k => { const r = S.reviews[k];
+      return `<div style="margin-top:10px"><div class="tag num">${k}</div>${["good", "stuck", "next"].filter(f => r[f]).map(f => `<div class="muted" style="margin-top:4px;white-space:pre-wrap"><b>${{ good: "잘 된 것", stuck: "막힌 것", next: "다음 주" }[f]}</b> ${esc(r[f])}</div>`).join("")}</div>`; }).join("")}</details>` : ""}
+  </section>
+  <button class="btn ghost" data-a="tab" data-k="settings" style="width:100%">${I("sliders", 18)}설정 · 백업</button>`;
+}
+
+/* ===== 설정 ===== */
+function rSettings() {
+  const hasOld = (() => { try { return !!localStorage.getItem(OLD_LS); } catch (e) { return false; } })();
+  return `
+  <header class="top"><div><div class="brand spell">Sol Manager</div><h1>설정</h1></div></header>
+  <section class="card">
+    <h2>${I("moon")}테마</h2>
+    <div class="seg">${[["time", "시간 따라"], ["dawn", "낮"], ["midnight", "밤"], ["system", "기기 설정"]].map(([v, l]) => `<button data-a="theme" data-v="${v}" class="${S.settings.theme === v ? "on" : ""}">${l}</button>`).join("")}</div>
+    <div class="muted" style="margin-top:8px">시간 따라: 저녁 체크인 시각부터 밤 테마로 바뀌어요.</div>
+  </section>
+  <section class="card">
+    <h2>${I("sliders")}기본</h2>
+    <div class="list">
+      <div class="li"><span class="grow">저녁 체크인 시작</span><input type="number" inputmode="numeric" min="12" max="23" data-c="set" data-f="eveningHour" value="${S.settings.eveningHour || 18}" style="width:70px"><span class="muted">시</span></div>
+      <div class="li"><span class="grow">하루 글쓰기 목표</span><input type="number" inputmode="numeric" data-c="set" data-f="writeGoal" value="${S.settings.writeGoal}" style="width:100px"><span class="muted">자</span></div>
+      <div class="li"><span class="grow">알바 시급 <span class="muted">(예상 수입 계산용)</span></span><input type="number" inputmode="numeric" data-c="set" data-f="wage" value="${S.settings.wage || ""}" placeholder="0" style="width:100px"><span class="muted">원</span></div>
+    </div>
+  </section>
+  <section class="card">
+    <h2>${I("cloud")}낮은 날 루틴 <span class="hint">낮 1~2점 · 저녁 3점 이하</span></h2>
+    <div class="list">${S.routines.map(r => `<div class="li"><input type="text" class="grow" data-c="rtT" data-id="${r.id}" value="${esc(r.t)}"><button class="btn ghost sm" data-a="rtDel" data-id="${r.id}" aria-label="삭제">✕</button></div>`).join("")}</div>
+    <div class="row" style="margin-top:8px"><input type="text" id="nrT" class="grow" placeholder="나한테 효과 있던 작은 행동"><button class="btn sm" data-a="rtAdd">추가</button></div>
+  </section>
+  <section class="card">
+    <h2>${I("key")}백업</h2>
+    <p class="muted" style="margin:0 0 10px">기록은 이 브라우저 안에만 있어요. 한 달에 한 번 내려받아 두세요.</p>
+    <div class="row wrap"><button class="btn" data-a="export">JSON 내보내기</button><button class="btn" data-a="import">JSON으로 복원</button>
+      ${hasOld ? `<button class="btn" data-a="oldExport">예전 SOL ENT 기록 받기</button>` : ""}</div>
+  </section>
+  <section class="card">
+    <h2>${I("close")}초기화</h2>
+    <button class="btn danger" data-a="reset">모든 기록 지우고 처음부터</button>
+  </section>
+  <p class="muted" style="text-align:center">SOL MANAGER · 1인 기업·프리랜서용 생활 & 업무 매니저</p>`;
+}
+
+/* ===== 렌더 ===== */
+function applyTheme() {
+  const m = S.settings.theme || "time";
+  const night = m === "midnight" || (m === "time" && isEvening()) || (m === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+  document.documentElement.dataset.theme = night ? "midnight" : "dawn";
+  document.getElementById("themeColor").setAttribute("content", night ? "#241726" : "#fff6f8");
+}
+function render() {
+  applyTheme();
+  renderTabs();
+  const R = { today: rToday, projects: rProjects, career: rCareer, life: rLife, stats: rStats, settings: rSettings }[tab];
+  document.getElementById("app").innerHTML = R();
+}
+
+/* ===== 이벤트 ===== */
+const P = id => S.projects.find(p => p.id === id);
+function download(name, obj) {
+  const b = new Blob([JSON.stringify(obj, null, 2)], { type: "application/json" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+const nowHM = () => { const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
+
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-a]"); if (!el) return;
+  if (el.dataset.a === "pOpen" && e.target.closest("[data-stop]") && !e.target.closest("button[data-a=pOpen]")) return;
+  const a = el.dataset.a, id = el.dataset.id, d = day(VD());
+  switch (a) {
+    case "tab": if (el.dataset.k === "today" && tab === "today") viewDate = null; tab = el.dataset.k; window.scrollTo(0, 0); break;
+    case "t3fill": {
+      const cands = S.projects.filter(p => p.status === "focus").sort((x, y) => (x.deadline || "9").localeCompare(y.deadline || "9"))
+        .map(p => { const s = p.steps.find(s => !s.done); return s ? `${p.title} — ${s.t}` : null; }).filter(Boolean);
+      let added = 0;
+      d.top3.forEach(x => { if (!x.t && cands.length) { const c = cands.shift(); if (!d.top3.some(y => y.t === c)) { x.t = c; added++; } } });
+      toast(added ? `${added}개 채웠어요` : "빈 칸이 없거나 불러올 단계가 없어요"); break;
+    }
+    case "exToggle": d.ex.done = !d.ex.done; break;
+    case "wAdd": {
+      const c = +document.getElementById("wC").value; if (!c) { toast("글자 수를 넣어 주세요"); return; }
+      d.write.push({ pid: document.getElementById("wP").value, chars: c }); toast(`+${c.toLocaleString()}자`); break;
+    }
+    case "wDel": d.write.splice(+el.dataset.i, 1); break;
+    case "mood": { const m = +el.dataset.m; d.mood = d.mood === m ? null : m; break; }
+    case "chore": { const c = S.chores.find(c => c.id === id); c.last = TK(); toast(`${c.t} 완료`); break; }
+    case "shiftIn": { let s = S.shifts.find(s => s.date === TK()); if (!s) { s = { id: uid(), date: TK(), in: "", out: "" }; S.shifts.push(s); } s.in = nowHM(); s.out = ""; toast(`${s.in} 출근`); break; }
+    case "shiftOut": { const s = S.shifts.find(s => s.date === TK()); if (s) { s.out = nowHM(); toast(`${s.out} 퇴근 · ${hm(shiftMin(s))}`); } break; }
+    case "shiftAdd": { const dt = document.getElementById("nsD").value; if (!dt) return; S.shifts = S.shifts.filter(s => s.date !== dt);
+      S.shifts.push({ id: uid(), date: dt, in: document.getElementById("nsI").value, out: document.getElementById("nsO").value }); break; }
+    case "shiftDel": S.shifts = S.shifts.filter(s => s.id !== id); break;
+    case "ideaAdd": { const v = document.getElementById("ideaIn").value.trim(); if (!v) return; S.ideas.unshift({ id: uid(), t: v, date: TK() }); toast("냉동실에 넣었어요"); break; }
+    case "ideaDel": S.ideas = S.ideas.filter(i => i.id !== id); break;
+    case "ideaPromote": { const i = S.ideas.find(i => i.id === id); const np = { id: uid(), title: i.t, type: "창작", status: "hold", deadline: "", goal: "", note: `냉동실에서 꺼냄 (${i.date})`, steps: [] };
+      S.projects.push(np); S.ideas = S.ideas.filter(x => x.id !== id); openP = np.id; toast("보류 상태로 꺼냈어요"); break; }
+    case "pNewToggle": { const f = document.getElementById("pNew"); f.hidden = !f.hidden; if (!f.hidden) document.getElementById("npT").focus(); return; }
+    case "pAdd": { const t = document.getElementById("npT").value.trim(); if (!t) { toast("이름을 넣어 주세요"); return; }
+      const np = { id: uid(), title: t, type: document.getElementById("npType").value, status: document.getElementById("npS").value, deadline: document.getElementById("npD").value, goal: document.getElementById("npG").value.trim(), note: "", steps: [],
+        contest: document.getElementById("npC").checked, announce: document.getElementById("npA").value, cstage: document.getElementById("npC").checked ? "prep" : "" };
+      S.projects.push(np); openP = np.id; break; }
+    case "pOpen": openP = openP === id ? null : id; break;
+    case "cStage": { const p = P(el.dataset.p), v = el.dataset.v; p.cstage = v;
+      if (v === "prep") { if (p.status === "wait" || p.status === "done") p.status = "focus"; }
+      else if (v === "submitted") { p.status = "wait"; p.submittedAt = p.submittedAt || TK(); p.steps.forEach(st => st.done = true); toast("제출 완료! 발표일을 넣어 두세요"); }
+      else { p.status = "done"; toast(v === "win" ? "축하해요!" : "결과를 기록했어요"); }
+      break; }
+    case "pDel": if (!confirm("이 프로젝트를 삭제할까요?")) return; S.projects = S.projects.filter(p => p.id !== id); openP = null; break;
+    case "stepAdd": { const inp = document.getElementById("st_" + el.dataset.p); const v = inp.value.trim(); if (!v) return; P(el.dataset.p).steps.push({ id: uid(), t: v, done: false }); break; }
+    case "stepDel": { const p = P(el.dataset.p); p.steps = p.steps.filter(s => s.id !== id); break; }
+    case "choreAdd": { const t = document.getElementById("ncT").value.trim(); if (!t) return; S.chores.push({ id: uid(), t, every: Math.max(1, +document.getElementById("ncE").value || 7), last: "" }); break; }
+    case "choreDel": S.chores = S.chores.filter(c => c.id !== id); break;
+    case "rtAdd": { const t = document.getElementById("nrT").value.trim(); if (!t) return; S.routines.push({ id: uid(), t }); break; }
+    case "rtDel": S.routines = S.routines.filter(r => r.id !== id); break;
+    case "theme": S.settings.theme = el.dataset.v; break;
+    case "lifeView": lifeView = el.dataset.v; render(); return;
+    case "mPrev": moneyYm = prevYm(moneyYm || ymOf(TK())); render(); return;
+    case "mNext": { const [y, m] = (moneyYm || ymOf(TK())).split("-").map(Number); const nx = `${m === 12 ? y + 1 : y}-${pad(m === 12 ? 1 : m + 1)}`; moneyYm = nx >= ymOf(TK()) ? null : nx; render(); return; }
+    case "mKind": moneyKind = el.dataset.v; render(); return;
+    case "mAdd": { const amt = +document.getElementById("mAmt").value; if (!amt) { toast("금액을 넣어 주세요"); return; }
+      const cat = moneyKind === "out" ? document.getElementById("mCat").value : "수입";
+      S.money.tx.push({ id: uid(), date: document.getElementById("mD").value || TK(), t: document.getElementById("mT").value.trim(), amt, kind: moneyKind, cat });
+      toast(`${moneyKind === "in" ? "+" : "−"}${won(amt)}`); break; }
+    case "mDel": S.money.tx = S.money.tx.filter(t => t.id !== id); break;
+    case "fxKind": window.__fxKind = el.dataset.v; window.__fxOpen = true; render(); return;
+    case "fxAdd": { const t = document.getElementById("fxT").value.trim(), amt = +document.getElementById("fxA").value; if (!t || !amt) { toast("이름과 금액을 넣어 주세요"); return; }
+      const kind = window.__fxKind || "out"; window.__fxOpen = true;
+      S.money.fixed.push({ id: uid(), t, amt, day: Math.min(31, Math.max(1, +document.getElementById("fxD").value || 1)), kind, cat: kind === "in" ? "수입" : "고정비", since: ymOf(TK()) });
+      toast("매달 자동으로 들어가요"); break; }
+    case "fxDel": { const f = S.money.fixed.find(x => x.id === id); if (!confirm(`${f.t}을(를) 해지할까요? 이번 달까지는 기록에 남고 다음 달부터 빠져요.`)) return;
+      if (f.since >= ymOf(TK())) S.money.fixed = S.money.fixed.filter(x => x.id !== id); else f.until = ymOf(TK()); break; }
+    case "dPrev": viewDate = addDays(VD(), -1); render(); return;
+    case "dNext": { const nx = addDays(VD(), 1); viewDate = nx >= TK() ? null : nx; render(); return; }
+    case "dToday": viewDate = null; render(); return;
+    case "openDay": viewDate = el.dataset.d === TK() ? null : el.dataset.d; tab = "today"; window.scrollTo(0, 0); render(); return;
+    case "clAdd": { const t = document.getElementById("clT").value.trim(); if (!t) { toast("한 줄 적어 주세요"); return; }
+      S.career.logs.push({ id: uid(), date: TK(), t, skill: document.getElementById("clS").value, star: false }); toast("파이프에 쌓였어요"); break; }
+    case "clDel": S.career.logs = S.career.logs.filter(l => l.id !== id); break;
+    case "clStar": { const l = S.career.logs.find(l => l.id === id); l.star = !l.star; break; }
+    case "month": { const t = document.getElementById("mT").value.trim(); S.career.monthly[el.dataset.ym] = { ok: el.dataset.v === "1", t };
+      if (t && el.dataset.v === "1") S.career.logs.push({ id: uid(), date: TK(), t, skill: "", star: true });
+      toast(el.dataset.v === "1" ? "좋아요, 이력서 재료에 넣었어요" : "다음 달엔 하나 만들어 봐요"); break; }
+    case "skAdd": { const t = document.getElementById("skT").value.trim(); if (!t) return;
+      S.career.skills.push({ id: uid(), t, why: document.getElementById("skW").value.trim(), until: document.getElementById("skU").value, done: false }); break; }
+    case "skDel": if (!confirm("이 기술 목표를 지울까요? 기록은 남아요.")) return; S.career.skills = S.career.skills.filter(x => x.id !== id); break;
+    case "rvPipe": { const k = isoWeek(new Date()); S.reviews[k] = S.reviews[k] || { good: "", stuck: "", next: "" }; S.reviews[k].pipe = +el.dataset.v; break; }
+    case "copyResume": { const g = {}; S.career.logs.filter(l => l.star).forEach(l => (g[skillName(l.skill)] = g[skillName(l.skill)] || []).push(l.t));
+      const txt = Object.entries(g).map(([k2, ls]) => `[${k2}]\n` + ls.map(t => `- ${t}`).join("\n")).join("\n\n");
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => toast("복사했어요"), () => toast("복사가 안 됐어요")); return; }
+    case "export": download(`solmanager-${TK()}.json`, S); return;
+    case "import": document.getElementById("importFile").click(); return;
+    case "oldExport": try { download(`solent-old-${TK()}.json`, JSON.parse(localStorage.getItem(OLD_LS))); } catch (err) { toast("예전 기록을 읽지 못했어요"); } return;
+    case "reset": if (!confirm("정말 모든 기록을 지울까요? 먼저 백업을 받아 두세요.")) return; S = seed(); toast("초기화했어요"); break;
+    default: return;
+  }
+  save(); render();
+});
+
+document.addEventListener("change", e => {
+  const el = e.target, c = el.dataset.c; if (!c) return;
+  const d = day(VD()), id = el.dataset.id; let rerender = true;
+  switch (c) {
+    case "t3done": d.top3[+el.dataset.i].done = el.checked; break;
+    case "t3text": d.top3[+el.dataset.i].t = el.value.trim(); rerender = false; break;
+    case "exMin": d.ex.min = el.value; if (+el.value > 0) d.ex.done = true; break;
+    case "note": d.note = el.value; rerender = false; break;
+    case "dPick": if (el.value) { viewDate = el.value >= TK() ? null : el.value; render(); } return;
+    case "pContest": { const p = P(el.dataset.p); p.contest = el.checked; if (p.contest && !p.cstage) p.cstage = p.status === "wait" ? "submitted" : "prep"; break; }
+    case "drag": d.drag = el.checked; rerender = false; break;
+    case "skDone": S.career.skills.find(x => x.id === id).done = el.checked; break;
+    case "care": d.care = el.checked ? [...new Set([...d.care, id])] : d.care.filter(x => x !== id); rerender = false; break;
+    case "step": { const s = P(el.dataset.p).steps.find(s => s.id === id); s.done = el.checked; break; }
+    case "pf": { const p = P(el.dataset.p); p[el.dataset.f] = el.value; rerender = ["status", "deadline", "type", "announce", "submittedAt"].includes(el.dataset.f); break; }
+    case "choreT": S.chores.find(x => x.id === id).t = el.value; rerender = false; break;
+    case "choreE": S.chores.find(x => x.id === id).every = Math.max(1, +el.value || 1); break;
+    case "rv": { const k = isoWeek(new Date()); S.reviews[k] = S.reviews[k] || { good: "", stuck: "", next: "" }; S.reviews[k][el.dataset.f] = el.value; rerender = false; break; }
+    case "set": S.settings[el.dataset.f] = +el.value || 0; rerender = false; break;
+    case "rtT": S.routines.find(r => r.id === id).t = el.value; rerender = false; break;
+    default: return;
+  }
+  save(); if (rerender) render();
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || e.isComposing) return;
+  const map = { mAmt: "mAdd", mT: "mAdd", fxA: "fxAdd", ideaIn: "ideaAdd", wC: "wAdd", npT: "pAdd", ncT: "choreAdd", nrT: "rtAdd", clT: "clAdd", skT: "skAdd" };
+  const t = e.target; let act = map[t.id];
+  if (!act && t.id && t.id.startsWith("st_")) { document.querySelector(`[data-a=stepAdd][data-p="${t.id.slice(3)}"]`)?.click(); return; }
+  if (act) { e.preventDefault(); document.querySelector(`[data-a=${act}]`)?.click(); }
+});
+
+document.getElementById("importFile").addEventListener("change", e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => { try { const o = JSON.parse(r.result); if (!o.projects || !o.days) throw 0; if (!confirm("지금 기록을 이 파일로 바꿀까요?")) return; localStorage.setItem(LS, JSON.stringify(o)); load(); save(); render(); toast("복원했어요"); }
+    catch (err) { toast("SOL MANAGER 백업 파일이 아니에요"); } };
+  r.readAsText(f); e.target.value = "";
+});
+
+// 날짜가 바뀌거나 앱으로 돌아오면 다시 그림
+let lastKey = TK();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && tab === "today") { lastKey = TK(); render(); } });
+setInterval(() => { if (TK() !== lastKey) { if (viewDate === lastKey) viewDate = null; lastKey = TK(); render(); } }, 60000);
+
+load(); save(); render();
+if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+</script>
+</body>
+</html>
