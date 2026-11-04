@@ -151,6 +151,7 @@ textarea{resize:vertical;min-height:64px}
 .proj .ttl{font:700 16px/24px var(--font-display)}
 .proj .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;align-items:center}
 .pbody{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);cursor:default}
+.pbody label.row{display:flex}
 .pbody label{display:block;font-size:12px;color:var(--ink-muted);margin:10px 0 4px}
 .group-h{margin:22px 4px 10px;display:flex;justify-content:space-between;align-items:center;color:var(--gold-text);font:700 14px/20px var(--font-display)}
 .group-h .num{font:400 12px var(--font-body);color:var(--ink-muted)}
@@ -159,6 +160,8 @@ textarea{resize:vertical;min-height:64px}
 .stat .k{font-size:12px;color:var(--ink-muted)}
 .stat .v{font:700 22px/28px var(--font-display)}
 .stats4{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.amt-in{color:var(--success)}
+.amt-out{color:var(--ink)}
 svg.chart{width:100%;height:auto;display:block}
 svg.chart .b{fill:var(--rose-500)}
 svg.chart .b.low{fill:var(--lilac-400)}
@@ -224,15 +227,15 @@ function seed() {
     days: {},
     projects: [
       { id: uid(), title: "던전에도 근로기준법이 적용됩니다", type: "창작", status: "focus", deadline: "2026-11-08",
-        goal: "대원 웹소설 공모전 제출 (현대 판타지)", note: "", steps: steps(["시놉시스 최종본 확정", "원고 퇴고", "제출 양식·분량 확인", "제출"]) },
+        goal: "대원 웹소설 공모전 제출 (현대 판타지)", note: "", contest: true, cstage: "prep", announce: "", steps: steps(["시놉시스 최종본 확정", "원고 퇴고", "제출 양식·분량 확인", "제출"]) },
       { id: uid(), title: "바다 밑 하루", type: "창작", status: "focus", deadline: "2026-11-08",
-        goal: "SF스토리 공모전 AI영상 부문 제출 — 제출하면 영상 작업은 끝", note: "", steps: steps(["남은 컷 생성", "편집·자막·사운드", "최종 렌더", "제출"]) },
+        goal: "SF스토리 공모전 AI영상 부문 제출 — 제출하면 영상 작업은 끝", note: "", contest: true, cstage: "prep", announce: "", steps: steps(["남은 컷 생성", "편집·자막·사운드", "최종 렌더", "제출"]) },
       { id: uid(), title: "현대로맨스 원고 (계약 출판사)", type: "창작", status: "next", deadline: "",
         goal: "출판사 원고 요청 대응", note: "남주: 컨벤션·MICE 업계 / 여주: 영어 통역 프리랜서", steps: steps(["인물·관계 설정", "시놉시스", "원고 집필", "출판사 제출"]) },
       { id: uid(), title: "나가주세요, 제발!", type: "창작", status: "next", deadline: "",
         goal: "25~30화 비축 → 플랫폼 연재·투베 도전 → 출판사 컨택, 선인세", note: "", steps: steps(["25화까지 비축", "30화까지 비축", "플랫폼 연재 시작", "투베 진입", "출판사 컨택"]) },
       { id: uid(), title: "브런치북 2막", type: "창작", status: "wait", deadline: "",
-        goal: "공모전 제출 완료 · 2027년 2월 발표", note: "", steps: [] },
+        goal: "공모전 제출 완료 · 2027년 2월 발표", note: "", contest: true, cstage: "submitted", announce: "", steps: [] },
       { id: uid(), title: "캐릭터·브랜딩", type: "부업", status: "hold", deadline: "",
         goal: "후순위 — 웹소설 일정이 끝난 뒤 다시 보기", note: "부캉이 · 부산 개복치 · 브랜딩 스튜디오", steps: [] },
       { id: uid(), title: "그 외 AI 영상", type: "창작", status: "hold", deadline: "",
@@ -255,6 +258,7 @@ function seed() {
       { id: uid(), t: "폰 내려놓고 일찍 눕기" },
     ],
     shifts: [], ideas: [], reviews: {},
+    money: { fixed: [], tx: [] },
     career: {
       skills: [
         { id: uid(), t: "학사·교육 도메인 설계", why: "요구사항 분석부터 DB 설계까지 말할 수 있게", until: "2027-04-30", done: false },
@@ -274,6 +278,11 @@ function load() {
   for (const k of Object.keys(base)) if (S[k] === undefined) S[k] = base[k];
   S.settings = Object.assign({}, base.settings, S.settings);
   S.career = Object.assign({ skills: [], logs: [], monthly: {} }, S.career);
+  S.money = Object.assign({ fixed: [], tx: [] }, S.money);
+  S.projects.forEach(p => { // 공모전 필드 보강 (기존 데이터)
+    if (p.contest === undefined) { p.contest = /공모/.test((p.goal || "") + (p.title || "")); p.cstage = p.contest ? (p.status === "wait" ? "submitted" : p.status === "done" ? "submitted" : "prep") : ""; }
+    if (p.announce === undefined) p.announce = "";
+  });
 }
 function save() { try { localStorage.setItem(LS, JSON.stringify(S)); } catch (e) { toast("저장 실패 — 백업을 내려받아 두세요"); } }
 function day(k = TK()) {
@@ -286,6 +295,8 @@ function toast(m) { const el = document.getElementById("toast"); el.textContent 
 
 /* ===== 상태 ===== */
 let tab = "today";
+let viewDate = null; // null = 오늘
+const VD = () => viewDate || TK();
 let openP = null;
 const STATUS = { focus: "집중", next: "다음", wait: "결과 대기", hold: "보류", done: "완료" };
 const STATUS_CHIP = { focus: "accent", next: "", wait: "ok", hold: "", done: "ok" };
@@ -299,6 +310,29 @@ function choreState(c) {
   if (left < 0) return { due: left, label: `${-left}일 밀림`, cls: "bad" };
   if (left === 0) return { due: 0, label: "오늘", cls: "warn" };
   return { due: left, label: `${left}일 뒤`, cls: "" };
+}
+const CSTAGE = [["prep", "준비"], ["submitted", "제출 완료"], ["win", "수상"], ["lose", "낙선"]];
+function contestChip(p) {
+  if (!p.contest) return "";
+  if (p.cstage === "win") return `<span class="chip ok">${I("crown", 14, true)}수상</span>`;
+  if (p.cstage === "lose") return `<span class="chip">낙선</span>`;
+  if (p.cstage === "submitted") {
+    if (!p.announce) return `<span class="chip lilac">발표일 미정</span>`;
+    const n = between(TK(), p.announce);
+    return n < 0 ? `<span class="chip warn">결과 확인</span>` : `<span class="chip lilac num">발표 ${ddLabel(p.announce)}</span>`;
+  }
+  return p.deadline ? `<span class="chip ${between(TK(), p.deadline) <= 7 ? "bad" : ""} num">마감 ${ddLabel(p.deadline)}</span>` : `<span class="chip">마감 미정</span>`;
+}
+function dateItems() { // 오늘 탭 D-day 띠: 준비 중이면 마감, 제출했으면 발표
+  const out = [];
+  S.projects.forEach(p => {
+    if (p.status === "hold") return;
+    if (p.contest) {
+      if (p.cstage === "prep" && p.deadline) out.push({ date: p.deadline, kind: "마감", p });
+      else if (p.cstage === "submitted" && p.announce) out.push({ date: p.announce, kind: "발표", p });
+    } else if (p.deadline && p.status !== "done") out.push({ date: p.deadline, kind: "마감", p });
+  });
+  return out.sort((a, b) => a.date.localeCompare(b.date));
 }
 function ddLabel(dl) { const n = between(TK(), dl); return n === 0 ? "D-DAY" : n > 0 ? `D-${n}` : `D+${-n}`; }
 function shiftMin(s) { if (!s.in || !s.out) return 0; const [a, b] = s.in.split(":").map(Number), [c, d] = s.out.split(":").map(Number); let m = (c * 60 + d) - (a * 60 + b); if (m < 0) m += 1440; return m; }
@@ -330,15 +364,14 @@ function nowStatus() {
   return { t: "퇴근 후 · 글 쓰는 시간", c: "ok" };
 }
 function rToday() {
-  const k = TK(), d = day(k), n = new Date(), st = nowStatus();
-  const weekend = n.getDay() === 0 || n.getDay() === 6;
-  const dl = S.projects.filter(p => p.deadline && p.status !== "done" && p.status !== "hold")
-    .sort((a, b) => a.deadline.localeCompare(b.deadline));
+  const k = VD(), isToday = k === TK(), vd = parseD(k), d = day(k), n = new Date(), st = nowStatus();
+  const weekend = vd.getDay() === 0 || vd.getDay() === 6;
+  const dl = dateItems();
   const goal = +S.settings.writeGoal || 0, wt = writeTotal(k);
   const writeProjects = S.projects.filter(p => p.type === "창작" && (p.status === "focus" || p.status === "next"));
   const dueChores = S.chores.map(c => ({ c, s: choreState(c) })).filter(x => x.s.due <= 0).sort((a, b) => a.s.due - b.s.due);
   const shift = S.shifts.find(s => s.date === k);
-  const evening = n.getHours() >= (+S.settings.eveningHour || 18);
+  const evening = isToday && n.getHours() >= (+S.settings.eveningHour || 18);
   const low = d.mood && (d.mood <= 2 || (evening && d.mood <= 3));
   const moodBlock = `<section class="card ${evening ? "hero" : ""}">${evening ? SPARK : ""}
     <h2>${I(evening ? "moon" : "heart")}${evening ? "저녁 체크인" : "오늘 기분"} ${evening ? `<span class="hint">${d.mood ? "기록했어요" : "지금 기분은?"}</span>` : ""}</h2>
@@ -354,16 +387,22 @@ function rToday() {
 
   return `
   <header class="top">
-    <div><div class="brand spell">Sol Manager</div><h1>${n.getMonth() + 1}월 ${n.getDate()}일 ${WD[n.getDay()]}요일</h1></div>
-    <div class="row"><span class="chip ${st.c}">${st.t}</span><button class="btn ghost sm" data-a="tab" data-k="settings" aria-label="설정">${I("sliders", 20)}</button></div>
+    <div><div class="brand spell">Sol Manager</div><h1>${vd.getMonth() + 1}월 ${vd.getDate()}일 ${WD[vd.getDay()]}요일</h1></div>
+    <div class="row">${isToday ? `<span class="chip ${st.c}">${st.t}</span>` : `<span class="chip lilac">지난 기록</span>`}<button class="btn ghost sm" data-a="tab" data-k="settings" aria-label="설정">${I("sliders", 20)}</button></div>
   </header>
+  <div class="row" style="margin:-8px 0 14px">
+    <button class="btn sm" data-a="dPrev" aria-label="전날">‹ 전날</button>
+    <input type="date" data-c="dPick" value="${k}" max="${TK()}" class="grow" style="text-align:center">
+    ${isToday ? `<button class="btn sm" disabled aria-label="다음날">다음날 ›</button>` : `<button class="btn sm" data-a="dNext" aria-label="다음날">다음날 ›</button>`}
+  </div>
+  ${isToday ? "" : `<div class="banner row" style="justify-content:space-between"><span>${k.slice(5).replace("-", "/")} 기록을 보고 있어요. 고쳐도 그날 기록으로 저장돼요.</span><button class="btn sm primary" data-a="dToday">오늘로</button></div>`}
   ${evening ? moodBlock + careBlock : ""}
 
-  ${dl.length ? `<div class="dstrip">${dl.map(p => { const dd = between(k, p.deadline);
-    return `<div class="dcard ${dd <= 7 ? "hot" : ""}"><div class="d num">${ddLabel(p.deadline)}</div><div class="t">${esc(p.title)}</div></div>`; }).join("")}</div>` : ""}
+  ${dl.length ? `<div class="dstrip">${dl.map(it => { const dd = between(k, it.date), hot = it.kind === "마감" && dd <= 7;
+    return `<div class="dcard ${hot ? "hot" : ""}"><div class="muted" style="font-size:11px;line-height:14px">${it.kind}</div><div class="d num">${ddLabel(it.date)}</div><div class="t">${esc(it.p.title)}</div></div>`; }).join("")}</div>` : ""}
 
   <section class="card t3 ${evening ? "" : "hero"}">${evening ? "" : SPARK}
-    <h2>${I("star")}오늘의 3가지 <button class="btn ghost sm" data-a="t3fill">${I("wand", 16, true)}불러오기</button></h2>
+    <h2>${I("star")}${isToday ? "오늘의 3가지" : "그날의 3가지"} <button class="btn ghost sm" data-a="t3fill">${I("wand", 16, true)}불러오기</button></h2>
     ${d.top3.map((x, i) => `<div class="row ${x.done ? "done" : ""}">
       <input type="checkbox" class="check" data-c="t3done" data-i="${i}" ${x.done ? "checked" : ""} aria-label="완료">
       <input type="text" class="grow" data-c="t3text" data-i="${i}" value="${esc(x.t)}" placeholder="${["가장 중요한 한 가지", "두 번째", "세 번째 (없어도 됨)"][i]}">
@@ -375,7 +414,7 @@ function rToday() {
       <h2>${I("letter")}글쓰기</h2>
       <div class="big num">${wt.toLocaleString()}<span class="muted" style="font-size:13px"> / ${goal.toLocaleString()}자</span></div>
       <div class="bar ${goal && wt >= goal ? "ok" : ""}"><i style="width:${goal ? Math.min(100, wt / goal * 100) : 0}%"></i></div>
-      <div class="muted">${goal && wt >= goal ? "오늘 목표 달성" : weekend ? "주말 · 쓸 수 있는 만큼" : st.c === "ok" ? "지금이 쓰는 시간" : "퇴근 후에 채우기"}</div>
+      <div class="muted">${goal && wt >= goal ? "오늘 목표 달성" : !isToday ? "그날 쓴 분량" : weekend ? "주말 · 쓸 수 있는 만큼" : st.c === "ok" ? "지금이 쓰는 시간" : "퇴근 후에 채우기"}</div>
     </section>
     <section class="card">
       <h2>${I("wing")}운동</h2>
@@ -396,11 +435,11 @@ function rToday() {
       return `<div class="li"><span class="grow">${esc(p ? p.title : "기타")}</span><span class="num">${(+w.chars).toLocaleString()}자</span><button class="btn ghost sm" data-a="wDel" data-i="${i}" aria-label="삭제">✕</button></div>`; }).join("")}</div>` : ""}
   </section>
 
-  ${pipeCards()}
+  ${isToday ? pipeCards() : ""}
 
   ${evening ? "" : moodBlock + careBlock}
 
-  ${weekend ? `<section class="card">
+  ${weekend && isToday ? `<section class="card">
     <h2>${I("sun")}알바 <span class="hint">${shift && shift.in ? `${shift.in} 출근${shift.out ? ` · ${shift.out} 퇴근 · ${hm(shiftMin(shift))}` : ""}` : "오늘 출근 전"}</span></h2>
     <div class="row">
       <button class="btn grow ${shift && shift.in ? "" : "primary"}" data-a="shiftIn">${shift && shift.in ? "출근 시간 다시 찍기" : "출근"}</button>
@@ -408,11 +447,11 @@ function rToday() {
     </div>
   </section>` : ""}
 
-  <section class="card">
+  ${isToday ? `<section class="card">
     <h2>${I("home")}생활 <span class="hint">${dueChores.length ? `챙길 것 ${dueChores.length}개` : "밀린 것 없음"}</span></h2>
     ${dueChores.length ? `<div class="list">${dueChores.slice(0, 4).map(({ c, s }) => `<div class="li"><span class="grow">${esc(c.t)}</span><span class="chip ${s.cls}">${s.label}</span><button class="btn sm" data-a="chore" data-id="${c.id}">했음</button></div>`).join("")}</div>`
       : `<div class="empty-note">집안일 다 챙겼어요.</div>`}
-  </section>
+  </section>` : ""}
 
   <section class="card">
     <h2>${I("cloud")}아이디어 냉동실 <span class="hint">새 기획은 일단 여기에</span></h2>
@@ -439,7 +478,8 @@ function rProjects() {
       <select id="npType">${TYPES.map(t => `<option>${t}</option>`).join("")}</select>
       <select id="npS">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${k === "next" ? "selected" : ""}>${v}</option>`).join("")}</select>
     </div>
-    <div class="row" style="margin-top:8px"><span class="muted" style="white-space:nowrap">마감</span><input type="date" id="npD"></div>
+    <label class="row" style="gap:10px;margin-top:10px"><input type="checkbox" class="check" id="npC">공모전이에요</label>
+    <div class="row" style="margin-top:8px"><div class="grow"><span class="muted">마감일</span><input type="date" id="npD"></div><div class="grow"><span class="muted">발표일 (공모전)</span><input type="date" id="npA"></div></div>
     <input type="text" id="npG" placeholder="목표 한 줄" style="margin-top:8px">
     <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" data-a="pAdd">만들기</button></div>
   </section>
@@ -458,9 +498,9 @@ function pCard(p) {
   const done = p.steps.filter(s => s.done).length, tot = p.steps.length, open = openP === p.id;
   const next = p.steps.find(s => !s.done);
   return `<section class="card proj" data-a="pOpen" data-id="${p.id}">
-    <div class="row"><div class="grow ttl">${esc(p.title)}</div>${p.deadline ? `<span class="chip ${between(TK(), p.deadline) <= 7 && p.status !== "done" ? "bad" : ""} num">${ddLabel(p.deadline)}</span>` : ""}</div>
+    <div class="row"><div class="grow ttl">${esc(p.title)}</div>${p.contest ? contestChip(p) : p.deadline ? `<span class="chip ${between(TK(), p.deadline) <= 7 && p.status !== "done" ? "bad" : ""} num">${ddLabel(p.deadline)}</span>` : ""}</div>
     ${p.goal ? `<div class="muted" style="margin-top:2px">${esc(p.goal)}</div>` : ""}
-    <div class="meta"><span class="tag">${esc(p.type)}</span>${tot ? `<span class="muted num">${done}/${tot}</span>` : ""}${next && !open ? `<span class="muted">· 다음: ${esc(next.t)}</span>` : ""}</div>
+    <div class="meta"><span class="tag">${esc(p.type)}</span>${p.contest ? `<span class="tag">공모전</span>` : ""}${p.contest && p.submittedAt ? `<span class="muted num">${p.submittedAt.slice(5).replace("-", "/")} 제출</span>` : ""}${tot ? `<span class="muted num">${done}/${tot}</span>` : ""}${next && !open ? `<span class="muted">· 다음: ${esc(next.t)}</span>` : ""}</div>
     ${tot ? `<div class="bar"><i style="width:${done / tot * 100}%"></i></div>` : ""}
     ${open ? `<div class="pbody" data-stop>
       <div class="list">${p.steps.map(s => `<div class="li"><input type="checkbox" class="check" data-c="step" data-p="${p.id}" data-id="${s.id}" ${s.done ? "checked" : ""}>
@@ -470,7 +510,13 @@ function pCard(p) {
       <label>이름</label><input type="text" data-c="pf" data-f="title" data-p="${p.id}" value="${esc(p.title)}">
       <div class="row"><div class="grow"><label>상태</label><select data-c="pf" data-f="status" data-p="${p.id}">${Object.entries(STATUS).map(([k, v]) => `<option value="${k}" ${p.status === k ? "selected" : ""}>${v}</option>`).join("")}</select></div>
         <div class="grow"><label>분류</label><select data-c="pf" data-f="type" data-p="${p.id}">${TYPES.map(t => `<option ${p.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></div></div>
-      <label>마감</label><input type="date" data-c="pf" data-f="deadline" data-p="${p.id}" value="${esc(p.deadline)}">
+      <label class="row" style="gap:10px;margin-top:12px;color:var(--ink)"><input type="checkbox" class="check" data-c="pContest" data-p="${p.id}" ${p.contest ? "checked" : ""}>공모전이에요</label>
+      ${p.contest ? `<label>공모 단계</label>
+        <div class="seg">${CSTAGE.map(([v, l]) => `<button data-a="cStage" data-p="${p.id}" data-v="${v}" class="${p.cstage === v ? "on" : ""}">${l}</button>`).join("")}</div>
+        <div class="row"><div class="grow"><label>마감일</label><input type="date" data-c="pf" data-f="deadline" data-p="${p.id}" value="${esc(p.deadline)}"></div>
+          <div class="grow"><label>발표일</label><input type="date" data-c="pf" data-f="announce" data-p="${p.id}" value="${esc(p.announce)}"></div></div>
+        ${p.cstage !== "prep" ? `<label>제출일</label><input type="date" data-c="pf" data-f="submittedAt" data-p="${p.id}" value="${esc(p.submittedAt || "")}">` : ""}`
+      : `<label>마감</label><input type="date" data-c="pf" data-f="deadline" data-p="${p.id}" value="${esc(p.deadline)}">`}
       <label>목표</label><input type="text" data-c="pf" data-f="goal" data-p="${p.id}" value="${esc(p.goal)}">
       <label>메모</label><textarea data-c="pf" data-f="note" data-p="${p.id}">${esc(p.note)}</textarea>
       <div class="row" style="margin-top:10px;justify-content:space-between"><button class="btn ghost sm danger" data-a="pDel" data-id="${p.id}">삭제</button><button class="btn sm" data-a="pOpen" data-id="${p.id}">접기</button></div>
@@ -565,13 +611,92 @@ function rCareer() {
 }
 
 /* ===== 생활 ===== */
+/* ===== 가계부 ===== */
+let lifeView = "home", moneyYm = null, moneyKind = "out";
+const CATS = ["식비", "배달·외식", "생활용품", "교통", "문화·취미", "의료", "기타"];
+const won = n => `${(Math.round(n) || 0).toLocaleString()}원`;
+const lifeSeg = () => `<div class="seg" style="margin-bottom:14px">${[["home", "집안일·알바"], ["money", "가계부"]].map(([v, l]) => `<button data-a="lifeView" data-v="${v}" class="${lifeView === v ? "on" : ""}">${l}</button>`).join("")}</div>`;
+function monthEntries(ym) {
+  const M = S.money, last = lastDayOfMonth(ym);
+  const fixed = M.fixed.filter(f => (f.since || "0000-00") <= ym && (!f.until || f.until >= ym)).map(f => ({
+    id: "f_" + f.id, date: `${ym}-${pad(Math.min(+f.day || 1, last))}`, t: f.t, amt: +f.amt || 0, kind: f.kind,
+    cat: f.kind === "in" ? "수입" : (f.cat || "고정비"), fixed: true }));
+  const tx = M.tx.filter(t => ymOf(t.date) === ym);
+  const wage = +S.settings.wage || 0;
+  const alba = wage ? S.shifts.filter(x => ymOf(x.date) === ym).reduce((a, x) => a + shiftMin(x), 0) / 60 * wage : 0;
+  const albaE = alba ? [{ id: "alba", date: `${ym}-${pad(last)}`, t: "알바 (근무 기록 기준 예상)", amt: Math.round(alba), kind: "in", cat: "수입", auto: true }] : [];
+  return [...fixed, ...tx, ...albaE].sort((a, b) => b.date.localeCompare(a.date));
+}
+function rMoney() {
+  const ym = moneyYm || ymOf(TK()), es = monthEntries(ym), today = TK();
+  const inc = es.filter(e => e.kind === "in").reduce((a, e) => a + e.amt, 0);
+  const out = es.filter(e => e.kind === "out").reduce((a, e) => a + e.amt, 0);
+  const fixedOut = es.filter(e => e.kind === "out" && e.fixed).reduce((a, e) => a + e.amt, 0);
+  const byCat = {}; es.filter(e => e.kind === "out").forEach(e => byCat[e.cat] = (byCat[e.cat] || 0) + e.amt);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]), maxC = cats.length ? cats[0][1] : 1;
+  const left = inc - out;
+  return `
+  <div class="row" style="justify-content:space-between;margin-bottom:12px">
+    <button class="btn sm" data-a="mPrev">‹</button><b style="font:700 18px var(--font-display)">${ym.slice(0, 4)}년 ${+ym.slice(5)}월</b>
+    <button class="btn sm" data-a="mNext" ${ym >= ymOf(today) ? "disabled" : ""}>›</button>
+  </div>
+  <section class="card stats4">
+    <div class="stat"><span class="k">수입</span><span class="v num amt-in">${won(inc)}</span></div>
+    <div class="stat"><span class="k">지출</span><span class="v num">${won(out)}</span></div>
+    <div class="stat"><span class="k">남은 돈</span><span class="v num" style="color:${left < 0 ? "var(--danger)" : "var(--ink)"}">${won(left)}</span></div>
+    <div class="stat"><span class="k">그중 고정비</span><span class="v num">${won(fixedOut)}</span></div>
+  </section>
+
+  <section class="card">
+    <h2>${I("plus")}기록 <span class="hint">고정비는 자동으로 들어가요</span></h2>
+    <div class="seg" style="margin-bottom:10px">${[["out", "지출"], ["in", "수입"]].map(([v, l]) => `<button data-a="mKind" data-v="${v}" class="${moneyKind === v ? "on" : ""}">${l}</button>`).join("")}</div>
+    <div class="row"><input type="number" inputmode="numeric" id="mAmt" placeholder="금액" class="grow">
+      ${moneyKind === "out" ? `<select id="mCat" style="width:130px">${CATS.map(c => `<option>${c}</option>`).join("")}</select>` : ""}</div>
+    <div class="row" style="margin-top:8px"><input type="text" id="mT" class="grow" placeholder="${moneyKind === "out" ? "어디에 (선택)" : "무슨 수입 (예: 크몽 외주)"}">
+      <input type="date" id="mD" value="${ym === ymOf(today) ? today : ym + "-01"}" style="width:150px"></div>
+    <div class="row" style="margin-top:10px;justify-content:flex-end"><button class="btn primary" data-a="mAdd">기록</button></div>
+  </section>
+
+  ${cats.length ? `<section class="card">
+    <h2>${I("gem")}어디에 썼나</h2>
+    ${cats.map(([c, v]) => `<div style="margin-bottom:8px"><div class="row"><span class="grow">${esc(c)}</span><span class="num">${won(v)}</span></div>
+      <div class="bar" style="margin:4px 0 0"><i style="width:${v / maxC * 100}%"></i></div></div>`).join("")}
+  </section>` : ""}
+
+  <section class="card">
+    <h2>${I("letter")}내역 <span class="hint">${es.length}건</span></h2>
+    ${es.length ? `<div class="list">${es.map(e => `<div class="li">
+      <span class="num muted" style="width:44px">${e.date.slice(5).replace("-", "/")}</span>
+      <div class="grow">${esc(e.t || e.cat)}<div class="muted">${esc(e.cat)}${e.fixed ? " · 고정" : ""}${e.auto ? " · 자동" : ""}${e.date > today ? " · 예정" : ""}</div></div>
+      <span class="num ${e.kind === "in" ? "amt-in" : "amt-out"}">${e.kind === "in" ? "+" : "−"}${won(e.amt)}</span>
+      ${e.fixed || e.auto ? `<span style="width:30px"></span>` : `<button class="btn ghost sm" data-a="mDel" data-id="${e.id}" aria-label="삭제">✕</button>`}</div>`).join("")}</div>`
+      : `<div class="empty-note">이번 달 기록이 없어요. 고정비부터 등록해 두면 매달 알아서 채워져요.</div>`}
+  </section>
+
+  <section class="card">
+    <h2>${I("key")}고정비·고정 수입 <span class="hint">한 번 등록하면 매달 자동</span></h2>
+    ${S.money.fixed.filter(f => !f.until).length ? `<div class="list">${S.money.fixed.filter(f => !f.until).map(f => `<div class="li">
+      <div class="grow">${esc(f.t)}<div class="muted">매달 ${f.day}일 · ${f.kind === "in" ? "수입" : esc(f.cat || "고정비")}</div></div>
+      <span class="num ${f.kind === "in" ? "amt-in" : ""}">${f.kind === "in" ? "+" : "−"}${won(f.amt)}</span>
+      <button class="btn ghost sm" data-a="fxDel" data-id="${f.id}" aria-label="해지">✕</button></div>`).join("")}</div>` : `<div class="empty-note">월세·관리비·통신비·구독료, 그리고 월급을 등록해 두세요.</div>`}
+    <details style="margin-top:10px" ${!S.money.fixed.length || window.__fxOpen ? "open" : ""}><summary>추가</summary>
+      <div class="seg" style="margin-top:8px">${[["out", "지출"], ["in", "수입"]].map(([v, l]) => `<button data-a="fxKind" data-v="${v}" class="${(window.__fxKind || "out") === v ? "on" : ""}">${l}</button>`).join("")}</div>
+      <div class="row" style="margin-top:8px"><input type="text" id="fxT" class="grow" placeholder="${(window.__fxKind || "out") === "in" ? "예: 월급" : "예: 월세"}"><input type="number" inputmode="numeric" id="fxA" placeholder="금액" style="width:120px"></div>
+      <div class="row" style="margin-top:8px"><span class="muted">매달</span><input type="number" id="fxD" min="1" max="31" value="${(window.__fxKind || "out") === "in" ? 10 : 25}" style="width:70px"><span class="muted">일</span>
+        <button class="btn sm" data-a="fxAdd" style="margin-left:auto">등록</button></div>
+    </details>
+  </section>`;
+}
+
 function rLife() {
+  if (lifeView === "money") return `<header class="top"><div><div class="brand spell">Sol Manager</div><h1>생활</h1></div></header>${lifeSeg()}${rMoney()}`;
   const ym = TK().slice(0, 7);
   const month = S.shifts.filter(s => s.date.startsWith(ym)).sort((a, b) => b.date.localeCompare(a.date));
   const mins = month.reduce((a, s) => a + shiftMin(s), 0), wage = +S.settings.wage || 0;
   const chores = S.chores.map(c => ({ c, s: choreState(c) })).sort((a, b) => a.s.due - b.s.due);
   return `
   <header class="top"><div><div class="brand spell">Sol Manager</div><h1>생활</h1></div></header>
+  ${lifeSeg()}
   <section class="card">
     <h2>${I("home")}집안일 <span class="hint">주기마다 알아서 올라와요</span></h2>
     <div class="list">${chores.map(({ c, s }) => `<div class="li">
@@ -638,6 +763,14 @@ function rStats() {
     ${bars(moods, 5, { labels, label: "기분 추이", cls: v => v <= 2 ? "low" : "", fmt: (v, i) => `${days[i]} · ${v} ${MOOD[v]}` })}</section>
   <section class="card"><h2>${I("letter")}글자 수 · 14일 <span class="hint">별 = 목표 달성</span></h2>
     ${bars(writes, Math.max(goal, ...writes, 1), { labels, goal, label: "글자 수 추이", cls: v => goal && v >= goal ? "ok" : "", fmt: (v, i) => `${days[i]} · ${v.toLocaleString()}자` })}</section>
+  <section class="card">
+    <h2>${I("letter")}날짜별 기록 <span class="hint">눌러서 그날 보기</span></h2>
+    <div class="list">${[...days].reverse().map(k2 => { const d2 = peek(k2), w2 = writeTotal(k2); const has = d2 && (d2.mood || w2 || d2.ex?.done || d2.note || d2.top3?.some(x => x.t));
+      return `<div class="li" data-a="openDay" data-d="${k2}" style="cursor:pointer">
+        <span class="num" style="width:62px">${k2.slice(5).replace("-", "/")} ${WD[parseD(k2).getDay()]}</span>
+        <span class="grow muted" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${has ? [d2.mood ? `기분 ${d2.mood}` : "", w2 ? `${w2.toLocaleString()}자` : "", d2.ex?.done ? "운동" : "", d2.note ? esc(d2.note) : ""].filter(Boolean).join(" · ") || "할 일만 있음" : "기록 없음"}</span>
+        ${I("chevron-right", 16, true)}</div>`; }).join("")}</div>
+  </section>
   <section class="card">
     <h2>${I("cloud")}퇴근 후 회사 생각 <span class="hint">최근 4주</span></h2>
     <div class="stats4">
@@ -721,9 +854,9 @@ const nowHM = () => { const n = new Date(); return `${pad(n.getHours())}:${pad(n
 document.addEventListener("click", e => {
   const el = e.target.closest("[data-a]"); if (!el) return;
   if (el.dataset.a === "pOpen" && e.target.closest("[data-stop]") && !e.target.closest("button[data-a=pOpen]")) return;
-  const a = el.dataset.a, id = el.dataset.id, d = day();
+  const a = el.dataset.a, id = el.dataset.id, d = day(VD());
   switch (a) {
-    case "tab": tab = el.dataset.k; window.scrollTo(0, 0); break;
+    case "tab": if (el.dataset.k === "today" && tab === "today") viewDate = null; tab = el.dataset.k; window.scrollTo(0, 0); break;
     case "t3fill": {
       const cands = S.projects.filter(p => p.status === "focus").sort((x, y) => (x.deadline || "9").localeCompare(y.deadline || "9"))
         .map(p => { const s = p.steps.find(s => !s.done); return s ? `${p.title} — ${s.t}` : null; }).filter(Boolean);
@@ -750,9 +883,15 @@ document.addEventListener("click", e => {
       S.projects.push(np); S.ideas = S.ideas.filter(x => x.id !== id); openP = np.id; toast("보류 상태로 꺼냈어요"); break; }
     case "pNewToggle": { const f = document.getElementById("pNew"); f.hidden = !f.hidden; if (!f.hidden) document.getElementById("npT").focus(); return; }
     case "pAdd": { const t = document.getElementById("npT").value.trim(); if (!t) { toast("이름을 넣어 주세요"); return; }
-      const np = { id: uid(), title: t, type: document.getElementById("npType").value, status: document.getElementById("npS").value, deadline: document.getElementById("npD").value, goal: document.getElementById("npG").value.trim(), note: "", steps: [] };
+      const np = { id: uid(), title: t, type: document.getElementById("npType").value, status: document.getElementById("npS").value, deadline: document.getElementById("npD").value, goal: document.getElementById("npG").value.trim(), note: "", steps: [],
+        contest: document.getElementById("npC").checked, announce: document.getElementById("npA").value, cstage: document.getElementById("npC").checked ? "prep" : "" };
       S.projects.push(np); openP = np.id; break; }
     case "pOpen": openP = openP === id ? null : id; break;
+    case "cStage": { const p = P(el.dataset.p), v = el.dataset.v; p.cstage = v;
+      if (v === "prep") { if (p.status === "wait" || p.status === "done") p.status = "focus"; }
+      else if (v === "submitted") { p.status = "wait"; p.submittedAt = p.submittedAt || TK(); p.steps.forEach(st => st.done = true); toast("제출 완료! 발표일을 넣어 두세요"); }
+      else { p.status = "done"; toast(v === "win" ? "축하해요!" : "결과를 기록했어요"); }
+      break; }
     case "pDel": if (!confirm("이 프로젝트를 삭제할까요?")) return; S.projects = S.projects.filter(p => p.id !== id); openP = null; break;
     case "stepAdd": { const inp = document.getElementById("st_" + el.dataset.p); const v = inp.value.trim(); if (!v) return; P(el.dataset.p).steps.push({ id: uid(), t: v, done: false }); break; }
     case "stepDel": { const p = P(el.dataset.p); p.steps = p.steps.filter(s => s.id !== id); break; }
@@ -761,6 +900,26 @@ document.addEventListener("click", e => {
     case "rtAdd": { const t = document.getElementById("nrT").value.trim(); if (!t) return; S.routines.push({ id: uid(), t }); break; }
     case "rtDel": S.routines = S.routines.filter(r => r.id !== id); break;
     case "theme": S.settings.theme = el.dataset.v; break;
+    case "lifeView": lifeView = el.dataset.v; render(); return;
+    case "mPrev": moneyYm = prevYm(moneyYm || ymOf(TK())); render(); return;
+    case "mNext": { const [y, m] = (moneyYm || ymOf(TK())).split("-").map(Number); const nx = `${m === 12 ? y + 1 : y}-${pad(m === 12 ? 1 : m + 1)}`; moneyYm = nx >= ymOf(TK()) ? null : nx; render(); return; }
+    case "mKind": moneyKind = el.dataset.v; render(); return;
+    case "mAdd": { const amt = +document.getElementById("mAmt").value; if (!amt) { toast("금액을 넣어 주세요"); return; }
+      const cat = moneyKind === "out" ? document.getElementById("mCat").value : "수입";
+      S.money.tx.push({ id: uid(), date: document.getElementById("mD").value || TK(), t: document.getElementById("mT").value.trim(), amt, kind: moneyKind, cat });
+      toast(`${moneyKind === "in" ? "+" : "−"}${won(amt)}`); break; }
+    case "mDel": S.money.tx = S.money.tx.filter(t => t.id !== id); break;
+    case "fxKind": window.__fxKind = el.dataset.v; window.__fxOpen = true; render(); return;
+    case "fxAdd": { const t = document.getElementById("fxT").value.trim(), amt = +document.getElementById("fxA").value; if (!t || !amt) { toast("이름과 금액을 넣어 주세요"); return; }
+      const kind = window.__fxKind || "out"; window.__fxOpen = true;
+      S.money.fixed.push({ id: uid(), t, amt, day: Math.min(31, Math.max(1, +document.getElementById("fxD").value || 1)), kind, cat: kind === "in" ? "수입" : "고정비", since: ymOf(TK()) });
+      toast("매달 자동으로 들어가요"); break; }
+    case "fxDel": { const f = S.money.fixed.find(x => x.id === id); if (!confirm(`${f.t}을(를) 해지할까요? 이번 달까지는 기록에 남고 다음 달부터 빠져요.`)) return;
+      if (f.since >= ymOf(TK())) S.money.fixed = S.money.fixed.filter(x => x.id !== id); else f.until = ymOf(TK()); break; }
+    case "dPrev": viewDate = addDays(VD(), -1); render(); return;
+    case "dNext": { const nx = addDays(VD(), 1); viewDate = nx >= TK() ? null : nx; render(); return; }
+    case "dToday": viewDate = null; render(); return;
+    case "openDay": viewDate = el.dataset.d === TK() ? null : el.dataset.d; tab = "today"; window.scrollTo(0, 0); render(); return;
     case "clAdd": { const t = document.getElementById("clT").value.trim(); if (!t) { toast("한 줄 적어 주세요"); return; }
       S.career.logs.push({ id: uid(), date: TK(), t, skill: document.getElementById("clS").value, star: false }); toast("파이프에 쌓였어요"); break; }
     case "clDel": S.career.logs = S.career.logs.filter(l => l.id !== id); break;
@@ -786,17 +945,19 @@ document.addEventListener("click", e => {
 
 document.addEventListener("change", e => {
   const el = e.target, c = el.dataset.c; if (!c) return;
-  const d = day(), id = el.dataset.id; let rerender = true;
+  const d = day(VD()), id = el.dataset.id; let rerender = true;
   switch (c) {
     case "t3done": d.top3[+el.dataset.i].done = el.checked; break;
     case "t3text": d.top3[+el.dataset.i].t = el.value.trim(); rerender = false; break;
     case "exMin": d.ex.min = el.value; if (+el.value > 0) d.ex.done = true; break;
     case "note": d.note = el.value; rerender = false; break;
+    case "dPick": if (el.value) { viewDate = el.value >= TK() ? null : el.value; render(); } return;
+    case "pContest": { const p = P(el.dataset.p); p.contest = el.checked; if (p.contest && !p.cstage) p.cstage = p.status === "wait" ? "submitted" : "prep"; break; }
     case "drag": d.drag = el.checked; rerender = false; break;
     case "skDone": S.career.skills.find(x => x.id === id).done = el.checked; break;
     case "care": d.care = el.checked ? [...new Set([...d.care, id])] : d.care.filter(x => x !== id); rerender = false; break;
     case "step": { const s = P(el.dataset.p).steps.find(s => s.id === id); s.done = el.checked; break; }
-    case "pf": { const p = P(el.dataset.p); p[el.dataset.f] = el.value; rerender = ["status", "deadline", "type"].includes(el.dataset.f); break; }
+    case "pf": { const p = P(el.dataset.p); p[el.dataset.f] = el.value; rerender = ["status", "deadline", "type", "announce", "submittedAt"].includes(el.dataset.f); break; }
     case "choreT": S.chores.find(x => x.id === id).t = el.value; rerender = false; break;
     case "choreE": S.chores.find(x => x.id === id).every = Math.max(1, +el.value || 1); break;
     case "rv": { const k = isoWeek(new Date()); S.reviews[k] = S.reviews[k] || { good: "", stuck: "", next: "" }; S.reviews[k][el.dataset.f] = el.value; rerender = false; break; }
@@ -809,7 +970,7 @@ document.addEventListener("change", e => {
 
 document.addEventListener("keydown", e => {
   if (e.key !== "Enter" || e.isComposing) return;
-  const map = { ideaIn: "ideaAdd", wC: "wAdd", npT: "pAdd", ncT: "choreAdd", nrT: "rtAdd", clT: "clAdd", skT: "skAdd" };
+  const map = { mAmt: "mAdd", mT: "mAdd", fxA: "fxAdd", ideaIn: "ideaAdd", wC: "wAdd", npT: "pAdd", ncT: "choreAdd", nrT: "rtAdd", clT: "clAdd", skT: "skAdd" };
   const t = e.target; let act = map[t.id];
   if (!act && t.id && t.id.startsWith("st_")) { document.querySelector(`[data-a=stepAdd][data-p="${t.id.slice(3)}"]`)?.click(); return; }
   if (act) { e.preventDefault(); document.querySelector(`[data-a=${act}]`)?.click(); }
@@ -826,7 +987,7 @@ document.getElementById("importFile").addEventListener("change", e => {
 // 날짜가 바뀌거나 앱으로 돌아오면 다시 그림
 let lastKey = TK();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && tab === "today") { lastKey = TK(); render(); } });
-setInterval(() => { if (TK() !== lastKey) { lastKey = TK(); render(); } }, 60000);
+setInterval(() => { if (TK() !== lastKey) { if (viewDate === lastKey) viewDate = null; lastKey = TK(); render(); } }, 60000);
 
 load(); save(); render();
 if ("serviceWorker" in navigator) addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
